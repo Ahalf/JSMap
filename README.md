@@ -1,2 +1,2 @@
-# LABINS-JSMap
+JSMap
 This is a map

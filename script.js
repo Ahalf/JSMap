@@ -60,6 +60,8 @@ require([
    * Create the map, view and widgets
    * 
    ******************************************************************/
+
+
 //////////////////////
 // Labins Popups /////
 //////////////////////
@@ -75,7 +77,7 @@ var NGSpopupTemplate = {
   "<p>Datasheet: <a href={datasheet2}>here</a></p>",
   actions: [{
   title: "Visit NGS website",
-  id: "website-link",
+  id: "ngsWebsite",
   className: "esri-icon-launch-link-external"
   }]
 };
@@ -90,10 +92,11 @@ var NGSPreliminarypopupTemplate = {
   "<p>Description file: <a href={base_and_survey.sde.PUBLISHED_PRELIMINARY.description2}>here</a></p>",
   actions: [{
   title: "Visit the National Geodetic Survey website",
-  id: "website-link",
+  id: "ngsWebsite",
   className: "esri-icon-launch-link-external"
   }]
 };
+
 // obtain BLMID, QuadName, images
 // https://community.esri.com/community/gis/web-gis/arcgisonline/blog/2017/07/18/conditional-field-display-with-arcade-in-pop-ups
 // for conditional expressions
@@ -106,10 +109,11 @@ var certifiedCornersTemplate = {
   "<p>Quad Number: {quad_num}</p>",
   actions: [{
   title: "Visit the National Geodetic Survey website",
-  id: "website-link",
+  id: "ngsWebsite",
   className: "esri-icon-launch-link-external"
   }]
 };
+
 //ID, name, county, quad name, status, station 1, station 2, mhw, mlw, stevens id
 var tideStationsTemplate = {
   title: 'Tide Stations: {id}',
@@ -123,7 +127,7 @@ var tideStationsTemplate = {
   "<p><b>DEP Report: <a target='_blank' href={report_dep}>here</a></b></p>",
   actions: [{
   title: "Visit the National Geodetic Survey website",
-  id: "website-link",
+  id: "ngsWebsite",
   className: "esri-icon-launch-link-external"
   }]
 };
@@ -147,23 +151,6 @@ var tideInterpPointsTemplate = {
   className: "esri-icon-launch-link-external"
   }]
 };
-
-var geographicNamesTemplate = {
-  title: 'Geographic Names:',
-  content: "<p><b>Feature ID: {feature_id}</b></p>" + 
-  "<p>Feature Name: {feature_na}</p>" +
-  "<p>Feature Class: {feature_cl}</p>" +
-  "<p>State: {state_alph}</p>" +
-  "<p>County: {county_nam}</p>" +
-  "<p>Latitude: {prim_lat_d}</p>" +
-  "<p>Longitude: {prim_lon_1}</p>",
-  actions: [{
-  title: "Visit the National Geodetic Survey website",
-  id: "website-link",
-  className: "esri-icon-launch-link-external"
-  }]
-};
-
 
 var rMonumentsTemplate = {
   title: 'Regional Coastal Monitoring Data:',
@@ -273,32 +260,32 @@ className: "esri-icon-launch-link-external"
 var geoNames = new MapImageLayer({
   url: "https://services.nationalmap.gov/arcgis/rest/services/geonames/MapServer",
   title: "Geographic Names",
-  visible: false,
+  visible: true,
   sublayers: [{
     id: 1,
     title: "Landforms", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 2,
     title: "Streams (Mouth)", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 3,
     title: "Antarctica", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 5,
     title: "Airports", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
@@ -333,105 +320,105 @@ var geoNames = new MapImageLayer({
   }, {
     id: 10,
     title: "Bridges, Crossings, and Tunnels", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 11,
     title: "Cemeteries", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 12,
     title: "Dams", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 13,
     title: "Locales", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 14,
     title: "Mines", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 15,
     title: "Trailheads", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 16,
     title: "Wells", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 18,
     title: "Populated Places", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 19,
     title: "Civil Features", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 20,
     title: "Forests", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 21,
     title: "Parks", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 22,
     title: "Reserves", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 24,
     title: "Historical Cultural-Political Points", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 25,
     title: "Historical Hydrographic Points", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
   }, {
     id: 26,
     title: "Historical Physical Points", 
-    visible: true,
+    visible: false,
     popupTemplate: geonamesTemplate,
     definitionExpression: "state_alpha = 'FL'"
 
@@ -471,12 +458,12 @@ var labinsLayer = new MapImageLayer({
     title: "Tide Interpolation Points",
     visible: false,
     popupTemplate: tideInterpPointsTemplate
-  }, {
+  },/* {
     id:6,
     title: "Geographic Names",
     visible: false,
     popupTemplate: geographicNamesTemplate
-  }, {
+  },*/ {
     id:7,
     visible: false
   }, {
@@ -557,66 +544,65 @@ sublayers: [{
 }]
 }); 
 
-
-// Create the map
+/////////////////////
+// Create the map ///
+/////////////////////
 
   var map = new Map({
     basemap: "topo",
     layers: [labinsLayer, swfwmdLayer, controlLines, geoNames]
   });
 
-// Create the MapView
+
+/////////////////////////
+// Create the MapView ///
+/////////////////////////
 
 var mapView = new MapView({
 container: "mapViewDiv",
 map: map,
 center: [-82.28, 27.8],
-zoom: 14, 
+zoom: 7, 
 constraints: {
 rotationEnabled: false
 }
 });
 
 
-
-
-
 /////////////////////////
 //// Clickable Links ////
 /////////////////////////
 
-
+  //NGS link
   mapView.popup.on("trigger-action", function(event) {
-    if (event.action.id === "website-link"){
+    if (event.action.id === "ngsWebsite"){
       window.open("https://www.ngs.noaa.gov");
     }
   });
 
-  //rMonuments link
+  //R Monuments link
   mapView.popup.on("trigger-action", function(event) {
     if (event.action.id === "rMonuments"){
       window.open("https://floridadep.gov/water/beach-field-services/content/regional-coastal-monitoring-data");
     }
   });
 
-  //erosionControlLines Link
+  //Erosion ControlLines Link
   mapView.popup.on("trigger-action", function(event) {
     if (event.action.id === "waterBoundaryData"){
       window.open("http://www.labins.org/survey_data/water/water.cfm");
     }
   });
 
+  //National Map Link
   mapView.popup.on("trigger-action", function(event) {
     if (event.action.id === "national-map"){
       window.open("https://nationalmap.gov/");
     }
   });
 
-var attribute = "ctyname";
-var zoomParam = "Zoom to a County"
-var panelParam = "selectCountyPanel"
-var vurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/4"
-//////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////
 function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
 
   var task = new QueryTask({
