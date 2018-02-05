@@ -44,7 +44,7 @@
       </a>
       <ul class="dropdown-menu" role="menu">
         <li><a role="menuitem" tabindex="0" href="#" data-target="#panelBasemaps" aria-haspopup="true"><span class="glyphicon glyphicon-th-large"></span> Basemaps</a></li>
-        <li><a role="button" data-target="#panelLayer" aria-haspopup="true"><span class="glyphicon glyphicon-flag"></span> Risk Factors</a></li>
+        <li><a role="button" data-target="#panelLayer" aria-haspopup="true"><span class="glyphicon glyphicon-flag"></span> Zoom to Feature</a></li>
         <li><a role="menuitem" tabindex="0" href="#" data-target="#panelLegend" aria-haspopup="true"><span class="glyphicon glyphicon-list-alt"></span> Legend</a></li>
         <li><a role="menuitem" tabindex="0" href="#" data-target="#panelLayers" aria-haspopup="true"><span class="glyphicon glyphicon-list"></span> Layers</a></li>
         <li><a role="menuitem" tabindex="0" href="#" data-target="#panelPrint" aria-haspopup="true"><span class="glyphicon glyphicon-print"></span> Print</a></li>
@@ -102,13 +102,13 @@
 
 
 
-    <!-- Risk Factors Panel -->
+    <!-- Zoom to Feature Panel -->
     <div id="panelLayer" class="panel collapse">
         <div id="headingLayer" class="panel-heading" role="tab">
           <div class="panel-title">
             <a class="panel-toggle collapsed" role="button" data-toggle="collapse" href="#collapseLayer" aria-expanded="true" aria-controls="collapseLayer">
               <span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
-              <span class="panel-label">Risk Factors</span>
+              <span class="panel-label">Zoom to Feature</span>
             </a>
             <a class="panel-close" role="button" data-toggle="collapse" data-target="#panelLayer">
               <span class="esri-icon esri-icon-close" aria-hidden="true"></span>
@@ -116,16 +116,9 @@
           </div>
         </div>
         <div id="collapseLayer" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingLayer">
-          <div id="selectLayerButton" class="panel-body">
-            <button type="button" class="btn btn-block" value="qrtsum*Risk Index">Risk Index</button>
-            <button type="button" class="btn btn-block" value="qrt_belowpovertylevel*Below Poverty Level">Below Poverty Level</button>
-            <button type="button" class="btn btn-block" value="qrt18_44*Childbearing Age (18-44)">Childbearing Age (18-44)</button>
-            <button type="button" class="btn btn-block" value="qrt_nonenglish*Language other than English">Language other than English</button>
-            <button type="button" class="btn btn-block" value="qrt_nonwhite*Non-White">Non-White</button>                   
-          </div>
+
           <div class="panel-body">
-              <label id="opacity-label" for="opacity-slider">Opacity: 100%</label>
-              <input id="opacity-slider" type="range" min="0" max="1" step="0.01" value="1">
+            <select id="selectQuadPanel" class="form-control"></select>
           </div>
           <div class="panel-body">
             <select id="selectCountyPanel" class="form-control"></select>

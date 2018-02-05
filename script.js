@@ -557,6 +557,7 @@ sublayers: [{
 }]
 }); 
 
+
 // Create the map
 
   var map = new Map({
@@ -611,29 +612,33 @@ rotationEnabled: false
     }
   });
 
+var attribute = "ctyname";
+var zoomParam = "Zoom to a County"
+var panelParam = "selectCountyPanel"
+var vurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/4"
 //////////////////////////////////////////////////////////////////
-function buildSelectPanel() {
+function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
 
   var task = new QueryTask({
-    url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/4"
+    url: vurl
   });
 
   var params = new Query({
-    where: "1 = 1 AND ctyname IS NOT NULL",
-    outFields: ["ctyname"],
+    where: "1 = 1 AND " + attribute + " IS NOT NULL",
+    outFields: [attribute],
     returnDistinctValues: true
   });
 
   var option = domConstruct.create("option");
-  option.text = "Zoom to a County";
-  dom.byId("selectCountyPanel").add(option);
+  option.text = zoomParam;
+  dom.byId(panelParam).add(option);
 
   task.execute(params)
   .then(function(response) {
 
     var features = response.features;
     var values = features.map(function(feature) {
-    return feature.attributes.ctyname;
+    return feature.attributes[attribute];
     });
     return values;
   })
@@ -653,20 +658,20 @@ function buildSelectPanel() {
     uniqueValues.forEach(function(value) {
     var option = domConstruct.create("option");
     option.text = value;
-    dom.byId("selectCountyPanel").add(option);
+    dom.byId(panelParam).add(option);
     });
   });
   }
 
 
 
-  function zoomToCounty(location) {
+  function zoomToCounty(panelurl, location, attribute) {
 
 		var task = new QueryTask({
-			url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/4"
+			url: panelurl
 		});
 		var params = new Query({
-			where: "ctyname = '" + location + "'",
+			where: attribute + " = '" + location + "'",
 			returnGeometry: true
 		});
 		task.execute(params)
@@ -745,12 +750,27 @@ function buildSelectPanel() {
 
 
   ///////////////////////////////////////////////////////////////////TEST
+ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/"
 
-    buildSelectPanel();
-  
-    //watchUtils.whenTrue(mapView, "stationary", checkCenter);
+    // Build County Drop Down
+ buildSelectPanel(panelurl + "4" , "ctyname", "Zoom to a County", "selectCountyPanel");
     
     query("#selectCountyPanel").on("change", function(e) {
-      return zoomToCounty(e.target.value);
+      return zoomToCounty(panelurl + "4", e.target.value, "ctyname");
     });
+
+
+
+    //Build Quad Dropdown panel
+    buildSelectPanel(panelurl + "0" , "tile_name", "Zoom to a Quad", "selectQuadPanel");
+      
+    query("#selectQuadPanel").on("change", function(e) {
+      return zoomToCounty(panelurl + "0", e.target.value, "tile_name");
+    });
+
+
+    
+
+
+    
 });
