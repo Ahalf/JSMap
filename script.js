@@ -651,7 +651,7 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
 
 
 
-  function zoomToCounty(panelurl, location, attribute) {
+  function zoomToFeature(panelurl, location, attribute) {
 
 		var task = new QueryTask({
 			url: panelurl
@@ -734,24 +734,42 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
 
 
 
+//////////////////////
+// Zoom to Feature ///
+//////////////////////
 
-  ///////////////////////////////////////////////////////////////////TEST
- panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/"
+// Zoom to City/County/Quad
+panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/"
+
 
     // Build County Drop Down
- buildSelectPanel(panelurl + "4" , "ctyname", "Zoom to a County", "selectCountyPanel");
+    buildSelectPanel(panelurl + "4" , "ctyname", "Zoom to a County", "selectCountyPanel");
     
     query("#selectCountyPanel").on("change", function(e) {
-      return zoomToCounty(panelurl + "4", e.target.value, "ctyname");
+      return zoomToFeature(panelurl + "4", e.target.value, "ctyname");
     });
-
-
 
     //Build Quad Dropdown panel
     buildSelectPanel(panelurl + "0" , "tile_name", "Zoom to a Quad", "selectQuadPanel");
       
     query("#selectQuadPanel").on("change", function(e) {
-      return zoomToCounty(panelurl + "0", e.target.value, "tile_name");
+      return zoomToFeature(panelurl + "0", e.target.value, "tile_name");
+    });
+
+    //Build City Dropdown panel
+    buildSelectPanel(panelurl + "3" , "name", "Zoom to a City", "selectCityPanel");
+      
+    query("#selectCityPanel").on("change", function(e) {
+      return zoomToFeature(panelurl + "3", e.target.value, "name");
+    });
+
+// Zoom to Township/Range/Section
+
+    //Build City Dropdown panel
+    buildSelectPanel(panelurl + "2" , "trs", "Zoom to a Township-Range-Section", "selectTownshipPanel");
+  
+    query("#selectTownshipPanel").on("change", function(e) {
+      return zoomToFeature(panelurl + "2", e.target.value, "trs");
     });
 
 
