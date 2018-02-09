@@ -621,13 +621,13 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
 
   task.execute(params)
   .then(function(response) {
-
+//console.log(response.features);
     var features = response.features;
     var values = features.map(function(feature) {
     return feature.attributes[attribute];
     });
     return values;
-  })
+  })/*
   .then(function(values) {
 
     var uniqueValues = [];
@@ -637,9 +637,9 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
     }
     });
     return uniqueValues;
-  })
+  })*/
   .then(function(uniqueValues) {
-
+    //console.log(uniqueValues);
     uniqueValues.sort();
     uniqueValues.forEach(function(value) {
     var option = domConstruct.create("option");
@@ -772,7 +772,111 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
       return zoomToFeature(panelurl + "2", e.target.value, "trs");
     });
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Test Zoom to County/City Feature
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+var subRegionSelect = dom.byId("selectNGSCountyPanel");
+var stateNameSelect = dom.byId("selectNGSCityPanel");
+
+var controlLinesURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/3";
+
+var statesLayer = new FeatureLayer({
+  url: controlLinesURL,
+  outFields: ["county", "name"],
+  visible: false
+});
+
+var task = new QueryTask({
+  var: controlLinesURL
+});
+
+mapView.then(function() {
+  return statesLayer.then(function(response) {
+    var subRegionQuery = new Query();
+    subRegionQuery.where = "1=1";
+    subRegionQuery.outFields = ["county"];
+    subRegionQuery.returnDistinctValues = true;
+    subRegionQuery.orderByFields = ["county"];
+    returnGeometry: true
+    return statesLayer.queryFeatures(subRegionQuery);
+  });
+}).then(addToSelect)
+.otherwise(queryError)
+
+
+function queryError(error) {
+console.error(error);
+}
+
+// Add the unique values to the subregion
+// select element. This will allow the user
+// to filter states by subregion.
+function addToSelect(values) {
+var option = domConstruct.create("option");
+option.text = "";
+subRegionSelect.add(option);
+
+values.features.forEach(function(value) {
+  var option = domConstruct.create("option");
+  option.text = value.attributes.county;
+  subRegionSelect.add(option);
+});
+}
+
+// Add the unique values to the state
+// select element. This will allow the user
+// to filter states by state and region.
+function addToSelect2(values) {
+//console.log(values);
+var option = domConstruct.create("option");
+option.text = "";
+stateNameSelect.add(option);
+
+values.features.forEach(function(value) {
+  var option = domConstruct.create("option");
+  option.text = value.attributes.name;
+  stateNameSelect.add(option);
+});
+}
+
+function setDefinitionExpression() {
+var strregion = subRegionSelect.options[subRegionSelect.selectedIndex].value;
+var strstate = stateNameSelect.options[stateNameSelect.selectedIndex].value;
+if (strregion != "" && strstate !== "") {
+  statesLayer.definitionExpression = "county = '" + strregion + "' AND name = '" + strstate + "'";
+} else if (strregion != "") {
+  statesLayer.definitionExpression = "county = '" + strregion + "'";
+} else if (strstate !== "") {
+  statesLayer.definitionExpression = "name = '" + strstate + "'";
+}
+
+if (!statesLayer.visible) {
+  statesLayer.visible = true;
+}
+}
+
+on(subRegionSelect, "change", function(evt) {
+var type = evt.target.value;
+
+var i;
+for (i = stateNameSelect.options.length - 1; i >= 0; i--) {
+  stateNameSelect.remove(i);
+}
+
+var subRegionQuery = new Query();
+subRegionQuery.where = "county = '" + type + "'";
+subRegionQuery.outFields = ["name"];
+subRegionQuery.returnDistinctValues = true;
+subRegionQuery.orderByFields = ["name"];
+return statesLayer.queryFeatures(subRegionQuery).then(addToSelect2);
+setDefinitionExpression();
+})
+
+on(stateNameSelect, "change", function(evt) {
+var type = evt.target.value;
+setDefinitionExpression();
+})
     
 
 

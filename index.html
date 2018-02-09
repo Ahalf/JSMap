@@ -132,6 +132,38 @@
 
 
 
+    <!-- Zoom to NGS Points Panel -->
+    <div id="panelLayer" class="panel collapse">
+      <div id="headingLayer" class="panel-heading" role="tab">
+        <div class="panel-title">
+          <a class="panel-toggle collapsed" role="button" data-toggle="collapse" href="#collapseLayer" aria-expanded="true" aria-controls="collapseLayer">
+            <span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
+            <span class="panel-label">Zoom to NGS Point</span>
+          </a>
+          <a class="panel-close" role="button" data-toggle="collapse" data-target="#panelLayer">
+            <span class="esri-icon esri-icon-close" aria-hidden="true"></span>
+          </a>
+        </div>
+      </div>
+      <div id="collapseLayer" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingLayer">
+        <div class="panel-body">
+          <li class="dropdown-header"><font size = "3">Zoom to County/City/Quad</font></li>
+          <select id="selectNGSCountyPanel" class="form-control"></select>
+          <select id="selectNGSCityPanel" class="form-control"></select>
+          <select id="selectNGSTownshipPanel" class="form-control"></select>
+          <select id="selectNGSRangePanel" class="form-control"></select>
+          <select id="selectNGSSectionPanel" class="form-control"></select>
+
+        </div>
+        <div class="panel-body">
+            <li class="dropdown-header"><font size = "3">Zoom to Township/Range/Section</font></li>
+          <select id="selectTownshipPanel" class="form-control"></select>
+        </div>
+      </div>
+    </div>
+
+
+
     <!-- Panel - Legend -->
 
     <div id="panelLegend" class="panel collapse in">
