@@ -544,13 +544,21 @@ sublayers: [{
 }]
 }); 
 
+var controlLinesURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/3";
+
+var statesLayer = new FeatureLayer({
+  url: controlLinesURL,
+  outFields: ["county", "name"],
+  visible: false
+});
+
 /////////////////////
 // Create the map ///
 /////////////////////
 
   var map = new Map({
     basemap: "topo",
-    layers: [labinsLayer, swfwmdLayer, controlLines, geoNames]
+    layers: [labinsLayer, swfwmdLayer, controlLines, geoNames, statesLayer]
   });
 
 
@@ -772,6 +780,7 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
       return zoomToFeature(panelurl + "2", e.target.value, "trs");
     });
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Test Zoom to County/City Feature
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -779,17 +788,6 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
 var subRegionSelect = dom.byId("selectNGSCountyPanel");
 var stateNameSelect = dom.byId("selectNGSCityPanel");
 
-var controlLinesURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/3";
-
-var statesLayer = new FeatureLayer({
-  url: controlLinesURL,
-  outFields: ["county", "name"],
-  visible: false
-});
-
-var task = new QueryTask({
-  var: controlLinesURL
-});
 
 mapView.then(function() {
   return statesLayer.then(function(response) {
@@ -798,11 +796,11 @@ mapView.then(function() {
     subRegionQuery.outFields = ["county"];
     subRegionQuery.returnDistinctValues = true;
     subRegionQuery.orderByFields = ["county"];
-    returnGeometry: true
     return statesLayer.queryFeatures(subRegionQuery);
+    console.log(subRegionQuery.text);
   });
 }).then(addToSelect)
-.otherwise(queryError)
+.otherwise(queryError);
 
 
 function queryError(error) {
@@ -814,13 +812,14 @@ console.error(error);
 // to filter states by subregion.
 function addToSelect(values) {
 var option = domConstruct.create("option");
-option.text = "";
+option.text = "Zoom to a ";
 subRegionSelect.add(option);
 
 values.features.forEach(function(value) {
   var option = domConstruct.create("option");
   option.text = value.attributes.county;
   subRegionSelect.add(option);
+  console.log(option);
 });
 }
 
