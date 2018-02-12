@@ -544,11 +544,11 @@ sublayers: [{
 }]
 }); 
 
-var controlLinesURL = "http://gismaps.pagnet.org/arcgis/rest/services/TRS/MapServer/0";
+var controlLinesURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/2";
 
 var statesLayer = new FeatureLayer({
   url: controlLinesURL,
-  outFields: ["TOWNSHIP", "RANGE"],
+  outFields: ["TOWNSHIP", "RANGE", "sec_ch"],
   visible: false
 });
 
@@ -793,10 +793,10 @@ var sectionNameSelect = dom.byId("selectNGSSectionPanel");
 mapView.then(function() {
   return statesLayer.then(function(response) {
     var subRegionQuery = new Query();
-    subRegionQuery.where = "1=1";
-    subRegionQuery.outFields = ["TOWNSHIP"];
+    subRegionQuery.where = "tdir <> ' '";
+    subRegionQuery.outFields = ["twn_ch", "tdir"];
     subRegionQuery.returnDistinctValues = true;
-    subRegionQuery.orderByFields = ["TOWNSHIP"];
+    subRegionQuery.orderByFields = ["twn_ch", "tdir"];
     return statesLayer.queryFeatures(subRegionQuery);
     console.log(subRegionQuery.text);
   });
@@ -818,7 +818,8 @@ subRegionSelect.add(option);
 
 values.features.forEach(function(value) {
   var option = domConstruct.create("option");
-  option.text = value.attributes.TOWNSHIP;
+  var name  = value.attributes.twn_ch + value.attributes.tdir;
+  option.text = name;
   subRegionSelect.add(option);
   
 });
@@ -835,8 +836,10 @@ stateNameSelect.add(option);
 
 values.features.forEach(function(value) {
   var option = domConstruct.create("option");
-  option.text = value.attributes.RANGE;
+  var name = value.attributes.rng_ch + value.attributes.rdir;
+  option.text = name;
   stateNameSelect.add(option);
+  console.log(option.text);
 });
 }
 
@@ -846,11 +849,12 @@ function addToSelect3(values) {
   var option = domConstruct.create("option");
   option.text = "Zoom to a Section";
   sectionNameSelect.add(option);
+  console.log(option);
   
   values.features.forEach(function(value) {
     var option = domConstruct.create("option");
-    option.text = value.attributes.SECT;
-    //console.log(option.text);
+    option.text = value.attributes.sec_ch;
+    console.log("sectPRINT");
     sectionNameSelect.add(option);
   });
   }
@@ -861,13 +865,13 @@ var strstate = stateNameSelect.options[stateNameSelect.selectedIndex].value;
 var strsection = sectionNameSelect.options[sectionNameSelect.selectedIndex].value;
 
 if (strregion != "" && strstate !== "" && strsection !== "") {
-  statesLayer.definitionExpression = "TOWNSHIP = '" + strregion + "' AND RANGE = '" + strstate + "' AND SECT = '" + strsection + "'";
+  statesLayer.definitionExpression = "TOWNSHIP = '" + strregion + "' AND RANGE = '" + strstate + "' AND sec_ch = '" + strsection + "'";
 } else if (strregion != "") {
   statesLayer.definitionExpression = "TOWNSHIP = '" + strregion + "'";
 } else if (strstate !== "") {
   statesLayer.definitionExpression = "RANGE = '" + strstate + "'";
 } else if (strsection !== "") {
-  statesLayer.definitionExpression = "SECT = '" + strsection + "'";
+  statesLayer.definitionExpression = "sec_ch = '" + strsection + "'";
 } 
 
 if (!statesLayer.visible) {
@@ -877,6 +881,7 @@ if (!statesLayer.visible) {
 
 on(subRegionSelect, "change", function(evt) {
 var type = evt.target.value;
+console.log(type + "THIS IS THE TYPE PRINT");
 
 var i;
 for (i = stateNameSelect.options.length - 1; i >= 0; i--) {
@@ -884,12 +889,15 @@ for (i = stateNameSelect.options.length - 1; i >= 0; i--) {
   console.log("this removes state names")
 }
 
+console.log(type.substr(0,2) + " " + type.substr(2)+ " substr");
+ 
+
 var subRegionQuery = new Query();
-subRegionQuery.where = "TOWNSHIP = '" + type + "'";
-subRegionQuery.outFields = ["RANGE"];
+subRegionQuery.where = "twn_ch = '" + type.substr(0,2) + "' AND tdir = '" + type.substr(2) + "'";
+subRegionQuery.outFields = ["rng_ch", "rdir"];
 subRegionQuery.returnDistinctValues = true;
-subRegionQuery.orderByFields = ["RANGE"];
-return statesLayer.queryFeatures(subRegionQuery).then(addToSelect2);
+subRegionQuery.orderByFields = ["rng_ch", "rdir"];
+return statesLayer.queryFeatures(subRegionQuery).then(addToSelect2).then(console.log("Hello lamp"));
 setDefinitionExpression().then(console.log("THIs is the for sure defexpress"));
 })
 
@@ -904,11 +912,15 @@ on(stateNameSelect, "change", function(evt) {
     console.log(j);
   }
   
+
+  var e = document.getElementById("selectNGSCountyPanel");
+  var strUser = e.options[e.selectedIndex].text;
+
   var selectQuery = new Query();
-  selectQuery.where = "RANGE = '" + type + "'";
-  selectQuery.outFields = ["SECT"];
+  selectQuery.where = "twn_ch = '" + strUser.substr(0,2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + type.substr(0,2) + "' AND rdir = '" + type.substr(2) + "' AND rng_ch <> ' '";
+  selectQuery.outFields = ["sec_ch"];
   selectQuery.returnDistinctValues = true;
-  selectQuery.orderByFields = ["SECT"];
+  selectQuery.orderByFields = ["sec_ch"];
   return statesLayer.queryFeatures(selectQuery).then(addToSelect3).then(console.log("HELLODEFEXPRESS"));
   setDefinitionExpression();
   })
