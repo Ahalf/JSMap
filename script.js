@@ -544,11 +544,11 @@ sublayers: [{
 }]
 }); 
 
-var controlLinesURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/3";
+var controlLinesURL = "http://gismaps.pagnet.org/arcgis/rest/services/TRS/MapServer/0";
 
 var statesLayer = new FeatureLayer({
   url: controlLinesURL,
-  outFields: ["county", "name"],
+  outFields: ["TOWNSHIP", "RANGE"],
   visible: false
 });
 
@@ -765,10 +765,10 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
     });
 
     //Build City Dropdown panel
-    buildSelectPanel(panelurl + "3" , "name", "Zoom to a City", "selectCityPanel");
+    buildSelectPanel(panelurl + "3" , "RANGE", "Zoom to a City", "selectCityPanel");
       
     query("#selectCityPanel").on("change", function(e) {
-      return zoomToFeature(panelurl + "3", e.target.value, "name");
+      return zoomToFeature(panelurl + "3", e.target.value, "RANGE");
     });
 
 // Zoom to Township/Range/Section
@@ -787,15 +787,16 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
 
 var subRegionSelect = dom.byId("selectNGSCountyPanel");
 var stateNameSelect = dom.byId("selectNGSCityPanel");
+var sectionNameSelect = dom.byId("selectNGSSectionPanel");
 
 
 mapView.then(function() {
   return statesLayer.then(function(response) {
     var subRegionQuery = new Query();
     subRegionQuery.where = "1=1";
-    subRegionQuery.outFields = ["county"];
+    subRegionQuery.outFields = ["TOWNSHIP"];
     subRegionQuery.returnDistinctValues = true;
-    subRegionQuery.orderByFields = ["county"];
+    subRegionQuery.orderByFields = ["TOWNSHIP"];
     return statesLayer.queryFeatures(subRegionQuery);
     console.log(subRegionQuery.text);
   });
@@ -812,14 +813,14 @@ console.error(error);
 // to filter states by subregion.
 function addToSelect(values) {
 var option = domConstruct.create("option");
-option.text = "Zoom to a ";
+option.text = "Zoom to a Township";
 subRegionSelect.add(option);
 
 values.features.forEach(function(value) {
   var option = domConstruct.create("option");
-  option.text = value.attributes.county;
+  option.text = value.attributes.TOWNSHIP;
   subRegionSelect.add(option);
-  console.log(option);
+  
 });
 }
 
@@ -829,26 +830,45 @@ values.features.forEach(function(value) {
 function addToSelect2(values) {
 //console.log(values);
 var option = domConstruct.create("option");
-option.text = "";
+option.text = "Zoom to a Range";
 stateNameSelect.add(option);
 
 values.features.forEach(function(value) {
   var option = domConstruct.create("option");
-  option.text = value.attributes.name;
+  option.text = value.attributes.RANGE;
   stateNameSelect.add(option);
 });
 }
 
+function addToSelect3(values) {
+  //console.log("HELLOTHERE");
+  //console.log(values);
+  var option = domConstruct.create("option");
+  option.text = "Zoom to a Section";
+  sectionNameSelect.add(option);
+  
+  values.features.forEach(function(value) {
+    var option = domConstruct.create("option");
+    option.text = value.attributes.SECT;
+    //console.log(option.text);
+    sectionNameSelect.add(option);
+  });
+  }
+
 function setDefinitionExpression() {
 var strregion = subRegionSelect.options[subRegionSelect.selectedIndex].value;
 var strstate = stateNameSelect.options[stateNameSelect.selectedIndex].value;
-if (strregion != "" && strstate !== "") {
-  statesLayer.definitionExpression = "county = '" + strregion + "' AND name = '" + strstate + "'";
+var strsection = sectionNameSelect.options[sectionNameSelect.selectedIndex].value;
+
+if (strregion != "" && strstate !== "" && strsection !== "") {
+  statesLayer.definitionExpression = "TOWNSHIP = '" + strregion + "' AND RANGE = '" + strstate + "' AND SECT = '" + strsection + "'";
 } else if (strregion != "") {
-  statesLayer.definitionExpression = "county = '" + strregion + "'";
+  statesLayer.definitionExpression = "TOWNSHIP = '" + strregion + "'";
 } else if (strstate !== "") {
-  statesLayer.definitionExpression = "name = '" + strstate + "'";
-}
+  statesLayer.definitionExpression = "RANGE = '" + strstate + "'";
+} else if (strsection !== "") {
+  statesLayer.definitionExpression = "SECT = '" + strsection + "'";
+} 
 
 if (!statesLayer.visible) {
   statesLayer.visible = true;
@@ -861,22 +881,42 @@ var type = evt.target.value;
 var i;
 for (i = stateNameSelect.options.length - 1; i >= 0; i--) {
   stateNameSelect.remove(i);
+  console.log("this removes state names")
 }
 
 var subRegionQuery = new Query();
-subRegionQuery.where = "county = '" + type + "'";
-subRegionQuery.outFields = ["name"];
+subRegionQuery.where = "TOWNSHIP = '" + type + "'";
+subRegionQuery.outFields = ["RANGE"];
 subRegionQuery.returnDistinctValues = true;
-subRegionQuery.orderByFields = ["name"];
+subRegionQuery.orderByFields = ["RANGE"];
 return statesLayer.queryFeatures(subRegionQuery).then(addToSelect2);
-setDefinitionExpression();
+setDefinitionExpression().then(console.log("THIs is the for sure defexpress"));
 })
 
 on(stateNameSelect, "change", function(evt) {
-var type = evt.target.value;
-setDefinitionExpression();
+  var type = evt.target.value;
+  console.log(type + "This is a state name select");
+  
+  var j;
+  for (j = sectionNameSelect.options.length - 1; j >= 0; j--) {
+    sectionNameSelect.remove(j);
+    console.log("this removes things");
+    console.log(j);
+  }
+  
+  var selectQuery = new Query();
+  selectQuery.where = "RANGE = '" + type + "'";
+  selectQuery.outFields = ["SECT"];
+  selectQuery.returnDistinctValues = true;
+  selectQuery.orderByFields = ["SECT"];
+  return statesLayer.queryFeatures(selectQuery).then(addToSelect3).then(console.log("HELLODEFEXPRESS"));
+  setDefinitionExpression();
+  })
+
+on(sectionNameSelect, "change", function(evt) {
+  var type = evt.target.value;
+  console.log(type + "This is a section name select");
 })
-    
 
 
     
