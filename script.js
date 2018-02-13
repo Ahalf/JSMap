@@ -548,8 +548,8 @@ var townshipRangeSectionURL = "https://admin205.ispa.fsu.edu/arcgis/rest/service
 
 var townshipRangeSectionLayer = new FeatureLayer({
   url: townshipRangeSectionURL,
-  outFields: ["TOWNSHIP", "RANGE", "sec_ch"],
-  visible: false
+  outFields: ["twn_ch", "rng_ch", "sec_ch"],
+  visible: true
 });
 
 /////////////////////
@@ -670,7 +670,7 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
 		});
 		task.execute(params)
 			.then(function(response) {
-			mapView.goTo(response.features);
+      mapView.goTo(response.features);
 			});
 	}
 
@@ -754,6 +754,7 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
     buildSelectPanel(panelurl + "4" , "ctyname", "Zoom to a County", "selectCountyPanel");
     
     query("#selectCountyPanel").on("change", function(e) {
+      console.log(e.target.value);
       return zoomToFeature(panelurl + "4", e.target.value, "ctyname");
     });
 
@@ -857,26 +858,26 @@ function addToSelect3(values) {
     sectionSelect.add(option);
   });
   }
-
+/*
 function setDefinitionExpression() {
 var strregion = townshipSelect.options[townshipSelect.selectedIndex].value;
 var strstate = rangeSelect.options[rangeSelect.selectedIndex].value;
 var strsection = sectionSelect.options[sectionSelect.selectedIndex].value;
 
 if (strregion != "" && strstate !== "" && strsection !== "") {
-  townshipRangeSectionLayer.definitionExpression = "TOWNSHIP = '" + strregion + "' AND RANGE = '" + strstate + "' AND sec_ch = '" + strsection + "'";
+  townshipRangeSectionLayer.definitionExpression = "twn_ch = '" + strregion + "' AND rng_ch = '" + strstate + "' AND sec_ch = '" + strsection + "'";
 } else if (strregion != "") {
-  townshipRangeSectionLayer.definitionExpression = "TOWNSHIP = '" + strregion + "'";
+  townshipRangeSectionLayer.definitionExpression = "twn_ch = '" + strregion + "'";
 } else if (strstate !== "") {
-  townshipRangeSectionLayer.definitionExpression = "RANGE = '" + strstate + "'";
+  townshipRangeSectionLayer.definitionExpression = "rng_ch = '" + strstate + "'";
 } else if (strsection !== "") {
   townshipRangeSectionLayer.definitionExpression = "sec_ch = '" + strsection + "'";
 } 
 
 if (!townshipRangeSectionLayer.visible) {
   townshipRangeSectionLayer.visible = true;
-}
-}
+} 
+} */
 
 on(townshipSelect, "change", function(evt) {
 var type = evt.target.value;
@@ -897,7 +898,7 @@ rangeQuery.outFields = ["rng_ch", "rdir"];
 rangeQuery.returnDistinctValues = true;
 rangeQuery.orderByFields = ["rng_ch", "rdir"];
 return townshipRangeSectionLayer.queryFeatures(rangeQuery).then(addToSelect2);
-setDefinitionExpression();
+//setDefinitionExpression();
 })
 
 on(rangeSelect, "change", function(evt) {
@@ -920,14 +921,45 @@ on(rangeSelect, "change", function(evt) {
   selectQuery.outFields = ["sec_ch"];
   selectQuery.returnDistinctValues = true;
   selectQuery.orderByFields = ["sec_ch"];
-  return townshipRangeSectionLayer.queryFeatures(selectQuery).then(addToSelect3).then(console.log("HELLODEFEXPRESS"));
-  setDefinitionExpression();
-  })
+  return townshipRangeSectionLayer.queryFeatures(selectQuery).then(addToSelect3).then(console.log("HELLODEFEXPRESS"))
+  //setDefinitionExpression();
 
+
+  
+
+  function zoomToSectionFeature(panelurl, location, attribute) {
+
+    var task = new QueryTask({
+      url: panelurl
+    });
+    var params = new Query({
+      where:  "twn_ch = '" + strUser.substr(0,2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + type.substr(0,2) + "' AND rdir = '" + type.substr(2) + "' AND rng_ch <> ' '",
+      returnGeometry: true
+    });
+    task.execute(params)
+      .then(function(response) {
+      mapView.goTo(response.features);
+      });
+  }
 on(sectionSelect, "change", function(evt) {
   var type = evt.target.value;
   console.log(type + "This is a section name select");
-})
+
+
+  query("#selectNGSSectionPanel").on("change", function(e) {
+    var type = e.target.value;
+    return zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
+  
+  });
+  });
+
+
+
+ });
+
+
+
+
 
 
     
