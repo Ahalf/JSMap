@@ -558,7 +558,7 @@ var townshipRangeSectionLayer = new FeatureLayer({
 
   var map = new Map({
     basemap: "topo",
-    layers: [labinsLayer, swfwmdLayer, controlLines, geoNames, townshipRangeSectionLayer]
+    layers: [labinsLayer, swfwmdLayer, controlLines , townshipRangeSectionLayer]
   });
 
 
@@ -754,7 +754,6 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
     buildSelectPanel(panelurl + "4" , "ctyname", "Zoom to a County", "selectCountyPanel");
     
     query("#selectCountyPanel").on("change", function(e) {
-      console.log(e.target.value);
       return zoomToFeature(panelurl + "4", e.target.value, "ctyname");
     });
 
@@ -829,7 +828,6 @@ values.features.forEach(function(value) {
 // select element. This will allow the user
 // to filter states by state and region.
 function addToSelect2(values) {
-//console.log(values);
 var option = domConstruct.create("option");
 option.text = "Zoom to a Range";
 rangeSelect.add(option);
@@ -839,22 +837,17 @@ values.features.forEach(function(value) {
   var name = value.attributes.rng_ch + value.attributes.rdir;
   option.text = name;
   rangeSelect.add(option);
-  console.log(option.text);
 });
 }
 
 function addToSelect3(values) {
-  //console.log("HELLOTHERE");
-  //console.log(values);
   var option = domConstruct.create("option");
   option.text = "Zoom to a Section";
   sectionSelect.add(option);
-  console.log(option);
   
   values.features.forEach(function(value) {
     var option = domConstruct.create("option");
     option.text = value.attributes.sec_ch;
-    console.log("sectPRINT");
     sectionSelect.add(option);
   });
   }
@@ -881,15 +874,11 @@ if (!townshipRangeSectionLayer.visible) {
 
 on(townshipSelect, "change", function(evt) {
 var type = evt.target.value;
-console.log(type + "THIS IS THE TYPE PRINT");
-
 var i;
 for (i = rangeSelect.options.length - 1; i >= 0; i--) {
   rangeSelect.remove(i);
-  console.log("this removes state names")
 }
 
-console.log(type.substr(0,2) + " " + type.substr(2)+ " substr");
  
 
 var rangeQuery = new Query();
@@ -902,14 +891,10 @@ return townshipRangeSectionLayer.queryFeatures(rangeQuery).then(addToSelect2);
 })
 
 on(rangeSelect, "change", function(evt) {
-  var type = evt.target.value;
-  console.log(type + "This is a state name select");
-  
+  var type = evt.target.value;  
   var j;
   for (j = sectionSelect.options.length - 1; j >= 0; j--) {
     sectionSelect.remove(j);
-    console.log("this removes things");
-    console.log(j);
   }
   
 
@@ -921,41 +906,47 @@ on(rangeSelect, "change", function(evt) {
   selectQuery.outFields = ["sec_ch"];
   selectQuery.returnDistinctValues = true;
   selectQuery.orderByFields = ["sec_ch"];
-  return townshipRangeSectionLayer.queryFeatures(selectQuery).then(addToSelect3).then(console.log("HELLODEFEXPRESS"))
+  return townshipRangeSectionLayer.queryFeatures(selectQuery).then(addToSelect3);
   //setDefinitionExpression();
-
-
-  
-
-  function zoomToSectionFeature(panelurl, location, attribute) {
-
-    var task = new QueryTask({
-      url: panelurl
-    });
-    var params = new Query({
-      where:  "twn_ch = '" + strUser.substr(0,2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + type.substr(0,2) + "' AND rdir = '" + type.substr(2) + "' AND rng_ch <> ' '",
-      returnGeometry: true
-    });
-    task.execute(params)
-      .then(function(response) {
-      mapView.goTo(response.features);
-      });
-  }
-on(sectionSelect, "change", function(evt) {
-  var type = evt.target.value;
-  console.log(type + "This is a section name select");
-
-
-  query("#selectNGSSectionPanel").on("change", function(e) {
-    var type = e.target.value;
-    return zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
-  
-  });
-  });
 
 
 
  });
+
+function zoomToSectionFeature(panelurl, location, attribute) {
+
+  var township = document.getElementById("selectNGSCountyPanel");
+  var strUser = township.options[township.selectedIndex].text;
+
+  var range = document.getElementById("selectNGSCityPanel");
+  var rangeUser = range.options[range.selectedIndex].text;
+
+  var section = document.getElementById("selectNGSSectionPanel");
+  var sectionUser = section.options[range.selectedIndex].text;
+
+
+  var task = new QueryTask({
+    url: panelurl
+  });
+  var params = new Query({
+    where:  "twn_ch = '" + strUser.substr(0,2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + rangeUser.substr(0,2) + "' AND rdir = '" + rangeUser.substr(2) + "' AND sec_ch = '" + sectionUser + "'",
+    returnGeometry: true
+  });
+  task.execute(params)
+    .then(function(response) {
+      console.log(response.features + "These are response features");
+      mapView.goTo(response.features);
+    });
+}
+on(sectionSelect, "change", function(evt) {
+var type = evt.target.value;
+
+  query("#selectNGSSectionPanel").on("change", function(e) {
+    var type = e.target.value;
+    return zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
+
+});
+});
 
 
 
