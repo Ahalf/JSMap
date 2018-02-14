@@ -765,10 +765,10 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
     });
 
     //Build City Dropdown panel
-    buildSelectPanel(panelurl + "3" , "RANGE", "Zoom to a City", "selectCityPanel");
+    buildSelectPanel(panelurl + "3" , "name", "Zoom to a City", "selectCityPanel");
       
     query("#selectCityPanel").on("change", function(e) {
-      return zoomToFeature(panelurl + "3", e.target.value, "RANGE");
+      return zoomToFeature(panelurl + "3", e.target.value, "name");
     });
 
 // Zoom to Township/Range/Section
@@ -922,7 +922,7 @@ function zoomToSectionFeature(panelurl, location, attribute) {
   var rangeUser = range.options[range.selectedIndex].text;
 
   var section = document.getElementById("selectNGSSectionPanel");
-  var sectionUser = section.options[range.selectedIndex].text;
+  var sectionUser = section.options[section.selectedIndex].text;
 
 
   var task = new QueryTask({
@@ -938,10 +938,12 @@ function zoomToSectionFeature(panelurl, location, attribute) {
       mapView.goTo(response.features);
     });
 }
-on(sectionSelect, "change", function(evt) {
+on(sectionSelect, "input", function(evt) {
 var type = evt.target.value;
 
   query("#selectNGSSectionPanel").on("change", function(e) {
+
+    
     var type = e.target.value;
     return zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
 
