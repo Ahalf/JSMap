@@ -899,10 +899,10 @@ on(rangeSelect, "change", function(evt) {
   
 
   var e = document.getElementById("selectNGSCountyPanel");
-  var strUser = e.options[e.selectedIndex].text;
+  var townshipUser = e.options[e.selectedIndex].text;
 
   var selectQuery = new Query();
-  selectQuery.where = "twn_ch = '" + strUser.substr(0,2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + type.substr(0,2) + "' AND rdir = '" + type.substr(2) + "' AND rng_ch <> ' '";
+  selectQuery.where = "twn_ch = '" + townshipUser.substr(0,2) + "' AND tdir = '" + townshipUser.substr(2) + "' AND rng_ch = '" + type.substr(0,2) + "' AND rdir = '" + type.substr(2) + "' AND rng_ch <> ' '";
   selectQuery.outFields = ["sec_ch"];
   selectQuery.returnDistinctValues = true;
   selectQuery.orderByFields = ["sec_ch"];
@@ -916,7 +916,7 @@ on(rangeSelect, "change", function(evt) {
 function zoomToSectionFeature(panelurl, location, attribute) {
 
   var township = document.getElementById("selectNGSCountyPanel");
-  var strUser = township.options[township.selectedIndex].text;
+  var townshipUser = township.options[township.selectedIndex].text;
 
   var range = document.getElementById("selectNGSCityPanel");
   var rangeUser = range.options[range.selectedIndex].text;
@@ -929,7 +929,7 @@ function zoomToSectionFeature(panelurl, location, attribute) {
     url: panelurl
   });
   var params = new Query({
-    where:  "twn_ch = '" + strUser.substr(0,2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + rangeUser.substr(0,2) + "' AND rdir = '" + rangeUser.substr(2) + "' AND sec_ch = '" + sectionUser + "'",
+    where:  "twn_ch = '" + townshipUser.substr(0,2) + "' AND tdir = '" + townshipUser.substr(2) + "' AND rng_ch = '" + rangeUser.substr(0,2) + "' AND rdir = '" + rangeUser.substr(2) + "' AND sec_ch = '" + sectionUser + "'",
     returnGeometry: true
   });
   task.execute(params)
