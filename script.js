@@ -763,6 +763,8 @@ var countyStr = query("#selectCountyPanel").on("change", function(e) {
   });
   CalciteMapsArcGISSupport.setSearchExpandEvents(searchWidget);
 
+    console.log(countyStr)
+    console.log(searchWidget.sources.items[0].filter.where = countyStr);
   // Basemaps
   var basemaps = new Basemaps({
     container: "basemapGalleryDiv",
