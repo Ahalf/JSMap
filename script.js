@@ -689,7 +689,55 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
   // Search - add to navbar
   var searchWidget = new Search({
     container: "searchWidgetDiv",
-    view: mapView
+    view: mapView,
+    allPlaceholder: "Text search for NGS, DEP, and SWFWMD Data",
+    sources: [{
+      featureLayer: {
+        url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/0",
+        popupTemplate: {
+          title: 'NGS Control Point: {objectid}',
+          content: "<p><b>(Latitude, Longitude): {dec_lat}, {dec_long}</b></p>" +
+          "<p>County: {county}</p>" + 
+          "<p>PID: {pid}</p>" + 
+          "<p>Data Source: <a target='_blank' href={data_srce}>here</a></p>" +
+          "<p>Datasheet: <a href={datasheet2}>here</a></p>",
+          actions: [{
+          title: "Visit NGS website",
+          id: "ngsWebsite",
+          className: "esri-icon-launch-link-external"
+          }]
+        }
+      },
+      searchFields: ["pid"],
+      displayField: "pid",
+      exactMatch: false,
+      outFields: ["dec_lat", "dec_long", "pid", "county", "data_srce", "datasheet2"],
+      filter: "county LIKE 'LEON'",
+      name: "NGS Control Points PID",
+      placeholder: "Example: 3708",
+    }, {featureLayer: {
+      url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/0",
+      popupTemplate: {
+        title: 'NGS Control Point: {objectid}',
+        content: "<p><b>(Latitude, Longitude): {dec_lat}, {dec_long}</b></p>" +
+        "<p>County: {county}</p>" + 
+        "<p>PID: {pid}</p>" + 
+        "<p>Data Source: <a target='_blank' href={data_srce}>here</a></p>" +
+        "<p>Datasheet: <a href={datasheet2}>here</a></p>",
+        actions: [{
+        title: "Visit NGS website",
+        id: "ngsWebsite",
+        className: "esri-icon-launch-link-external"
+        }]
+      }
+    },
+    searchFields: ["pid"],
+    displayField: ["pid", "county"],
+    exactMatch: false,
+    outFields: ["dec_lat", "dec_long", "pid", "county", "data_srce", "datasheet2"],
+    name: "NGS Control Points PID",
+    placeholder: "Example: 3708",
+    }],
   });
   CalciteMapsArcGISSupport.setSearchExpandEvents(searchWidget);
 
@@ -765,10 +813,10 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
     });
 
     //Build City Dropdown panel
-    buildSelectPanel(panelurl + "3" , "name", "Zoom to a City", "selectCityPanel");
+    buildSelectPanel(panelurl + "3" , "RANGE", "Zoom to a City", "selectCityPanel");
       
     query("#selectCityPanel").on("change", function(e) {
-      return zoomToFeature(panelurl + "3", e.target.value, "name");
+      return zoomToFeature(panelurl + "3", e.target.value, "RANGE");
     });
 
 // Zoom to Township/Range/Section
@@ -899,10 +947,11 @@ on(rangeSelect, "change", function(evt) {
   
 
   var e = document.getElementById("selectNGSCountyPanel");
-  var townshipUser = e.options[e.selectedIndex].text;
+  var strUser = e.options[e.selectedIndex].text;
+  console.log(typeof(strUser));
 
   var selectQuery = new Query();
-  selectQuery.where = "twn_ch = '" + townshipUser.substr(0,2) + "' AND tdir = '" + townshipUser.substr(2) + "' AND rng_ch = '" + type.substr(0,2) + "' AND rdir = '" + type.substr(2) + "' AND rng_ch <> ' '";
+  selectQuery.where = "twn_ch = '" + strUser.substr(0,2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + type.substr(0,2) + "' AND rdir = '" + type.substr(2) + "' AND rng_ch <> ' '";
   selectQuery.outFields = ["sec_ch"];
   selectQuery.returnDistinctValues = true;
   selectQuery.orderByFields = ["sec_ch"];
@@ -916,20 +965,20 @@ on(rangeSelect, "change", function(evt) {
 function zoomToSectionFeature(panelurl, location, attribute) {
 
   var township = document.getElementById("selectNGSCountyPanel");
-  var townshipUser = township.options[township.selectedIndex].text;
+  var strUser = township.options[township.selectedIndex].text;
 
   var range = document.getElementById("selectNGSCityPanel");
   var rangeUser = range.options[range.selectedIndex].text;
 
   var section = document.getElementById("selectNGSSectionPanel");
-  var sectionUser = section.options[section.selectedIndex].text;
+  var sectionUser = section.options[range.selectedIndex].text;
 
 
   var task = new QueryTask({
     url: panelurl
   });
   var params = new Query({
-    where:  "twn_ch = '" + townshipUser.substr(0,2) + "' AND tdir = '" + townshipUser.substr(2) + "' AND rng_ch = '" + rangeUser.substr(0,2) + "' AND rdir = '" + rangeUser.substr(2) + "' AND sec_ch = '" + sectionUser + "'",
+    where:  "twn_ch = '" + strUser.substr(0,2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + rangeUser.substr(0,2) + "' AND rdir = '" + rangeUser.substr(2) + "' AND sec_ch = '" + sectionUser + "'",
     returnGeometry: true
   });
   task.execute(params)
@@ -938,12 +987,10 @@ function zoomToSectionFeature(panelurl, location, attribute) {
       mapView.goTo(response.features);
     });
 }
-on(sectionSelect, "input", function(evt) {
+on(sectionSelect, "change", function(evt) {
 var type = evt.target.value;
 
   query("#selectNGSSectionPanel").on("change", function(e) {
-
-    
     var type = e.target.value;
     return zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
 
