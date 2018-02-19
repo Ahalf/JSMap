@@ -680,6 +680,25 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
 // Widgets //
 /////////////
 
+//Get string variables (choices) for search widget
+
+var county = document.getElementById("selectCountyPanel");
+console.log(county);
+
+/*
+document.getElementById("selectCountyPanel").addEventListener("change", function(e) {
+  countyStr = e.target.value;
+  console.log("i did something" + countyStr);
+  return countyStr;
+});
+*/
+var county = document.getElementById("selectCountyPanel");
+var countyStr = query("#selectCountyPanel").on("change", function(e) {
+  countyStr = e.target.value.toUpperCase();
+  console.log(countyStr + "this is a county string");
+  return countyStr;
+
+});
 
   // Popup and panel sync
   mapView.then(function(){
@@ -712,7 +731,10 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
       displayField: "pid",
       exactMatch: false,
       outFields: ["dec_lat", "dec_long", "pid", "county", "data_srce", "datasheet2"],
-      filter: "county LIKE 'LEON'",
+      filter: {
+        where: "county = '" + countyStr + "'"
+        //"county LIKE '" + countyStr + "'"
+      },
       name: "NGS Control Points PID",
       placeholder: "Example: 3708",
     }, {featureLayer: {
@@ -813,10 +835,10 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
     });
 
     //Build City Dropdown panel
-    buildSelectPanel(panelurl + "3" , "RANGE", "Zoom to a City", "selectCityPanel");
+    buildSelectPanel(panelurl + "3" , "name", "Zoom to a City", "selectCityPanel");
       
     query("#selectCityPanel").on("change", function(e) {
-      return zoomToFeature(panelurl + "3", e.target.value, "RANGE");
+      return zoomToFeature(panelurl + "3", e.target.value, "name");
     });
 
 // Zoom to Township/Range/Section
@@ -987,7 +1009,7 @@ function zoomToSectionFeature(panelurl, location, attribute) {
       mapView.goTo(response.features);
     });
 }
-on(sectionSelect, "change", function(evt) {
+on(sectionSelect, "input", function(evt) {
 var type = evt.target.value;
 
   query("#selectNGSSectionPanel").on("change", function(e) {
