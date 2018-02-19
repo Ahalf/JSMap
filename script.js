@@ -692,13 +692,8 @@ document.getElementById("selectCountyPanel").addEventListener("change", function
   return countyStr;
 });
 */
-var county = document.getElementById("selectCountyPanel");
-var countyStr = query("#selectCountyPanel").on("change", function(e) {
-  countyStr = e.target.value.toUpperCase();
-  console.log(countyStr + "this is a county string");
-  return countyStr;
 
-});
+
 
   // Popup and panel sync
   mapView.then(function(){
@@ -732,7 +727,10 @@ var countyStr = query("#selectCountyPanel").on("change", function(e) {
       exactMatch: false,
       outFields: ["dec_lat", "dec_long", "pid", "county", "data_srce", "datasheet2"],
       filter: {
-        where: "county = '" + countyStr + "'"
+        where: "1=1"
+        
+        
+        //"county = '" + countyStr + "'"
         //"county LIKE '" + countyStr + "'"
       },
       name: "NGS Control Points PID",
@@ -761,10 +759,22 @@ var countyStr = query("#selectCountyPanel").on("change", function(e) {
     placeholder: "Example: 3708",
     }],
   });
+
+  var county = document.getElementById("selectCountyPanel");
+  var countyStr = query("#selectCountyPanel").on("change", function(e) {
+    countyStr = e.target.value.toUpperCase();
+    console.log(countyStr + "this is a county string");
+    var searchQuery = "county = '" + countyStr + "'";
+    searchWidget.sources.items[0].filter.where = searchQuery;
+    console.log(searchQuery);
+    return countyStr;
+  
+  });
+
   CalciteMapsArcGISSupport.setSearchExpandEvents(searchWidget);
 
     console.log(countyStr)
-    console.log(searchWidget.sources.items[0].filter.where = countyStr);
+    console.log(searchWidget.sources.items[0].filter.where);
   // Basemaps
   var basemaps = new Basemaps({
     container: "basemapGalleryDiv",
