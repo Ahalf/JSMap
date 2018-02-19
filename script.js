@@ -685,14 +685,6 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
 var county = document.getElementById("selectCountyPanel");
 console.log(county);
 
-/*
-document.getElementById("selectCountyPanel").addEventListener("change", function(e) {
-  countyStr = e.target.value;
-  console.log("i did something" + countyStr);
-  return countyStr;
-});
-*/
-
 
 
   // Popup and panel sync
