@@ -879,14 +879,22 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
 
     var city = document.getElementById("filterCityPanel");
     var cityStr = query("#filterCityPanel").on("change", function(e) {
-      cityStr = e.target.value.toUpperCase();
-      console.log(cityStr + "this is a city string");
-      var searchQuery = cityStr.geometry;
-      console.log(searchQuery + " This is the searchQuery");
-      searchWidget.sources.items[0].filter.geometry = searchQuery;
-      console.log(searchQuery);
-      return cityStr;
+      var task = new QueryTask({
+        url: panelurl + "3"
+      });
     
+      var params = new Query({
+        where: "name = '" + e.target.value + "'",
+        returnGeometry: true,        
+      });
+        
+      task.execute(params)
+      .then(function(response) {
+    console.log(response.features[0].geometry);
+      searchWidget.sources.items[0].filter.geometry = response.features[0].geometry;
+  
+      
+      })           
     });
 
 
