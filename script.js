@@ -67,7 +67,6 @@ require([
 //////////////////////
 
 
-//FOR MONDAY - Sandbox should be made, decide if you need to make a popup template for each type of data source
 var NGSpopupTemplate = {
   title: 'NGS Control Point: {objectid}',
   content: "<p><b>(Latitude, Longitude): {dec_lat}, {dec_long}</b></p>" +
@@ -114,7 +113,6 @@ var certifiedCornersTemplate = {
   }]
 };
 
-//ID, name, county, quad name, status, station 1, station 2, mhw, mlw, stevens id
 var tideStationsTemplate = {
   title: 'Tide Stations: {id}',
   content: "<p><b>ID: {id}</b></p>" + 
@@ -132,7 +130,6 @@ var tideStationsTemplate = {
   }]
 };
 
-//ID, county, quad name, method, station 1, station 2, mean high water, mean low water, approval form download
 var tideInterpPointsTemplate = {
   title: 'Tide Stations: {id}',
   content: "<p><b>ID: {id}</b></p>" + 
@@ -144,7 +141,6 @@ var tideInterpPointsTemplate = {
   "<p>Station 1: {station1}</p>" +
   "<p>Station 2: {station2}</p>" +
   "<p>Download report: <a target='_blank' href=http://www.labins.org/survey_data/water/FlexMap_docs/interp_approval_form.cfm?pin={iden}&mCountyName={cname}&mQuad={tile_name}&mhw={mhw2_ft}&mlw={mlw2_ft}>here</a></p>",
- 
   actions: [{
   title: "Visit the Labins Website for Water Boundary data",
   id: "waterBoundaryData",
@@ -250,9 +246,9 @@ className: "esri-icon-launch-link-external"
 
 
 
-//////////////////////
-// Load in the Maps //
-//////////////////////
+/////////////////////////
+// Load in the layers ///
+/////////////////////////
 
 
 /////https://developers.arcgis.com/javascript/latest/sample-code/layers-mapimagelayer-definitionexpression/index.html
@@ -635,17 +631,7 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
     return feature.attributes[attribute];
     });
     return values;
-  })/*
-  .then(function(values) {
-
-    var uniqueValues = [];
-    values.forEach(function(item) {
-    if (uniqueValues.length < 1 || uniqueValues.indexOf(item) === -1) {
-      uniqueValues.push(item);
-    }
-    });
-    return uniqueValues;
-  })*/
+  })
   .then(function(uniqueValues) {
     //console.log(uniqueValues);
     uniqueValues.sort();
@@ -691,6 +677,12 @@ console.log(county);
   mapView.then(function(){
     CalciteMapsArcGISSupport.setPopupPanelSync(mapView);
   });
+  // Search - Global
+  var navbarSearch = new Search({
+    container: "searchWidgetDiv1",
+    view: mapView
+  })
+
 
   // Search - add to navbar
   var searchWidget = new Search({
@@ -706,7 +698,8 @@ console.log(county);
           "<p>County: {county}</p>" + 
           "<p>PID: {pid}</p>" + 
           "<p>Data Source: <a target='_blank' href={data_srce}>here</a></p>" +
-          "<p>Datasheet: <a href={datasheet2}>here</a></p>",
+          "<p>Datasheet: <a href={datasheet2}>here</a></p>"+
+          "<p>Quad: {quad}</p>",
           actions: [{
           title: "Visit NGS website",
           id: "ngsWebsite",
@@ -735,7 +728,8 @@ console.log(county);
         "<p>County: {county}</p>" + 
         "<p>PID: {pid}</p>" + 
         "<p>Data Source: <a target='_blank' href={data_srce}>here</a></p>" +
-        "<p>Datasheet: <a href={datasheet2}>here</a></p>",
+        "<p>Datasheet: <a href={datasheet2}>here</a></p>"+
+        "<p>Quad: {quad}</p>",
         actions: [{
         title: "Visit NGS website",
         id: "ngsWebsite",
@@ -751,7 +745,7 @@ console.log(county);
     placeholder: "Example: 3708",
     }],
   });
-
+/*
   var county = document.getElementById("selectCountyPanel");
   var countyStr = query("#selectCountyPanel").on("change", function(e) {
     countyStr = e.target.value.toUpperCase();
@@ -762,6 +756,8 @@ console.log(county);
     return countyStr;
   
   });
+  */
+
 
   CalciteMapsArcGISSupport.setSearchExpandEvents(searchWidget);
 
@@ -853,6 +849,40 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
     query("#selectTownshipPanel").on("change", function(e) {
       return zoomToFeature(panelurl + "2", e.target.value, "trs");
     });
+
+///////////////////////
+// Filter by Feature //
+///////////////////////
+
+    buildSelectPanel(panelurl + "4" , "ctyname", "Filter by County", "filterCountyPanel");
+
+    var county = document.getElementById("filterCountyPanel");
+    var countyStr = query("#filterCountyPanel").on("change", function(e) {
+      countyStr = e.target.value.toUpperCase();
+      console.log(countyStr + "this is a county string");
+      var searchQuery = "county = '" + countyStr + "'";
+      searchWidget.sources.items[0].filter.where = searchQuery;
+      console.log(searchQuery);
+      return countyStr;
+    
+    });
+
+    buildSelectPanel("https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/0" , "quad", "Filter by Quad", "filterQuadPanel");
+
+    var quad = document.getElementById("filterQuadPanel");
+    var quadStr = query("#filterQuadPanel").on("change", function(e) {
+      quadStr = e.target.value.toUpperCase();
+      console.log(quadStr + "this is a quad string");
+      var searchQuery = "quad = '" + quadStr + "'";
+      searchWidget.sources.items[0].filter.where = searchQuery;
+      console.log(searchQuery);
+      return quadStr;
+    
+    });
+
+    buildSelectPanel(panelurl + "3" , "name", "Filter by City", "filterCityPanel");
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
