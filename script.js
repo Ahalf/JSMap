@@ -504,6 +504,7 @@ sublayers: [{
   id:3,
   title: "City Limits",
   visible: false, 
+  returnGeometry: true,
 }, {
   id:4,
   title: "County Boundaries",
@@ -710,13 +711,9 @@ console.log(county);
       searchFields: ["pid"],
       displayField: "pid",
       exactMatch: false,
-      outFields: ["dec_lat", "dec_long", "pid", "county", "data_srce", "datasheet2"],
+      outFields: ["dec_lat", "dec_long", "pid", "county", "data_srce", "datasheet2", "quad"],
       filter: {
-        where: "1=1"
-        
-        
-        //"county = '" + countyStr + "'"
-        //"county LIKE '" + countyStr + "'"
+        where: "1=1",
       },
       name: "NGS Control Points PID",
       placeholder: "Example: 3708",
@@ -761,8 +758,6 @@ console.log(county);
 
   CalciteMapsArcGISSupport.setSearchExpandEvents(searchWidget);
 
-    console.log(countyStr)
-    console.log(searchWidget.sources.items[0].filter.where);
   // Basemaps
   var basemaps = new Basemaps({
     container: "basemapGalleryDiv",
@@ -882,6 +877,17 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
 
     buildSelectPanel(panelurl + "3" , "name", "Filter by City", "filterCityPanel");
 
+    var city = document.getElementById("filterCityPanel");
+    var cityStr = query("#filterCityPanel").on("change", function(e) {
+      cityStr = e.target.value.toUpperCase();
+      console.log(cityStr + "this is a city string");
+      var searchQuery = cityStr.geometry;
+      console.log(searchQuery + " This is the searchQuery");
+      searchWidget.sources.items[0].filter.geometry = searchQuery;
+      console.log(searchQuery);
+      return cityStr;
+    
+    });
 
 
 
