@@ -4,10 +4,8 @@ require([
   "esri/views/MapView",
   "esri/layers/MapImageLayer",
   "esri/layers/FeatureLayer",
-  "esri/layers/GraphicsLayer",
   "esri/tasks/QueryTask",
   "esri/tasks/support/Query",
-  "esri/geometry/Polygon",
 
 
   // Widgets
@@ -41,10 +39,8 @@ require([
     MapView, 
     MapImageLayer,
     FeatureLayer,
-    GraphicsLayer,
     QueryTask, 
     Query,
-    Polygon,
     Basemaps, 
     Search, 
     Legend, 
@@ -69,7 +65,6 @@ require([
 //////////////////////
 // Labins Popups /////
 //////////////////////
-
 
 
 var NGSpopupTemplate = {
@@ -236,8 +231,8 @@ content: "<p><b>Mapunit Name: {muname}</b></p>" +
 "<p>Texture: {texture}</p>" +
 "<p>Drainage Class: {drainagecl}</p>" +
 "<p>Mapunit Kind: {mukind}</p>" +
-"<p>Flooding Frequency ‐ Dominant Condition: {flodfreqdc}</p>" +
-"<p>Flooding Frequency ‐ Maximum: {flodfreqma}</p>" + 
+"<p>Flooding Frequency - Dominant Condition: {flodfreqdc}</p>" +
+"<p>Flooding Frequency - Maximum: {flodfreqma}</p>" + 
 "<p>Description: {descript}</p>",
 
 actions: [{
@@ -560,9 +555,7 @@ var townshipRangeSectionLayer = new FeatureLayer({
 
   var map = new Map({
     basemap: "topo",
-    //layers: [labinsLayer, swfwmdLayer, controlLines , townshipRangeSectionLayer]
-    layers: [controlLines]
-  
+    layers: [labinsLayer, swfwmdLayer, controlLines , townshipRangeSectionLayer]
   });
 
 
@@ -677,7 +670,7 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
 //Get string variables (choices) for search widget
 
 var county = document.getElementById("selectCountyPanel");
-
+console.log(county);
 
 
 
@@ -877,7 +870,7 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
       console.log(quadStr + "this is a quad string");
       var searchQuery = "quad = '" + quadStr + "'";
       searchWidget.sources.items[0].filter.where = searchQuery;
-      console.log(searchQuery + " Search Query");
+      console.log(searchQuery);
       return quadStr;
     
     });
@@ -886,67 +879,16 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
 
     var city = document.getElementById("filterCityPanel");
     var cityStr = query("#filterCityPanel").on("change", function(e) {
-      console.log(e.target.value + "target value");
-      
-      var task = new QueryTask({
-        url: panelurl + "3",
-      });
+      cityStr = e.target.value.toUpperCase();
+      console.log(cityStr + "this is a city string");
+      var searchQuery = cityStr.geometry;
+      console.log(searchQuery + " This is the searchQuery");
+      searchWidget.sources.items[0].filter.geometry = searchQuery;
+      console.log(searchQuery);
+      return cityStr;
     
-      var params = new Query();
-      params.returnGeometry = true;
-      //params.geometry = ;
-      params.where = "name = '" + e.target.value + "'";
-      params.outFields = ["name"];
-
-
-      task.execute(params)
-      .then(function(response) {
-
-      controlLines.findSublayerById(3).definitionExpression = "name = '" + response.features[0].attributes.name + "'";
-      controlLines.findSublayerById(3).visible = true;
-      console.log(response.features[0].geometry);
-      console.log(typeof response.features[0].geometry.rings);
-      console.log(searchWidget.sources.items[0].filter);
-      var poly = new Polygon(response.features[0].geometry);
-      console.log(typeof poly);
-      searchWidget.sources.items[0].filter.geometry === response.features[0].geometry;
-      console.log(searchWidget.sources.items[0].filter)
-      }) 
     });
 
-    
-    //Build City Dropdown panel
-    buildSelectPanel(panelurl + "2" , "trs", "Filter by Township-Range-Section", "filterTownshipPanel");
-  
-    query("#filterTownshipPanel").on("change", function(e) {
-
-      var task = new QueryTask({
-        url: panelurl + "2",
-      });
-    
-      var params = new Query();
-      //params.returnGeometry = true;
-      //params.geometry = ;
-      params.where = "trs = '" + e.target.value + "'";
-      params.outFields = ["trs"];
-
-
-      task.execute(params)
-      .then(function(response) {
-      //console.log(response);
-      //console.log(response.features[0].geometry);
-      //searchWidget.sources.items[0].filter.geometry = 
-      response.features[0].geometry;
-      controlLines.findSublayerById(2).definitionExpression = "trs = '" + response.features[0].attributes.trs + "'";
-      controlLines.findSublayerById(2).visible = true;
-
-      console.log(response.features[0].attributes.trs)
-      return zoomToFeature(panelurl + "2", e.target.value, "trs"); ; 
-    }) 
-
-    });
-
-    var resutlsLayer = new GraphicsLayer();
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
