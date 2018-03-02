@@ -6,6 +6,10 @@ require([
   "esri/layers/FeatureLayer",
   "esri/tasks/QueryTask",
   "esri/tasks/support/Query",
+  "esri/geometry/geometryEngine",
+  "esri/tasks/GeometryService",
+  "esri/layers/GraphicsLayer",
+  "esri/Graphic",
 
 
   // Widgets
@@ -41,6 +45,10 @@ require([
     FeatureLayer,
     QueryTask, 
     Query,
+    geometryEngine,
+    GeometryService,
+    GraphicsLayer,
+    Graphic,
     Basemaps, 
     Search, 
     Legend, 
@@ -224,6 +232,7 @@ var swfwmdLayerPopupTemplate = {
 //municipal name, muacres, texture, drainage class, mukind, floodfreqdc,floodfreqma, description 
 //https://www.fgdl.org/metadata/metadata_archive/fgdl_html/nrcs_soils.htm
 //full key list for abbreviations
+
 var soilsTemplate = {
 title: 'USDA Soils:',
 content: "<p><b>Mapunit Name: {muname}</b></p>" + 
@@ -481,7 +490,7 @@ var labinsLayer = new MapImageLayer({
 var swfwmdLayer = new FeatureLayer({
   url: "https://www25.swfwmd.state.fl.us/ArcGIS/rest/services/AGOServices/AGOSurveyBM/MapServer",
   title: "SWFWMD Benchmarks" ,
-  visible: false,
+  visible: true,
   popupTemplate: swfwmdLayerPopupTemplate
 
  });
@@ -541,11 +550,12 @@ sublayers: [{
 }]
 }); 
 
-var townshipRangeSectionURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/2";
+//var townshipRangeSectionURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/2";
+var townshipRangeSectionURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/FREAC/Control_2017_Lines_TEST/MapServer/0";
 
 var townshipRangeSectionLayer = new FeatureLayer({
   url: townshipRangeSectionURL,
-  outFields: ["twn_ch", "rng_ch", "sec_ch"],
+  outFields: ["twn_ch", "rng_ch", "sec_ch", "trs"],
   visible: true
 });
 
@@ -553,9 +563,11 @@ var townshipRangeSectionLayer = new FeatureLayer({
 // Create the map ///
 /////////////////////
 
+var bufferLayer = new GraphicsLayer();
+
   var map = new Map({
     basemap: "topo",
-    layers: [labinsLayer, swfwmdLayer, controlLines , townshipRangeSectionLayer]
+    layers: [labinsLayer, swfwmdLayer, controlLines , townshipRangeSectionLayer, bufferLayer]
   });
 
 
@@ -640,6 +652,7 @@ function buildSelectPanel(vurl ,attribute, zoomParam, panelParam) {
     var option = domConstruct.create("option");
     option.text = value;
     dom.byId(panelParam).add(option);
+
     });
   });
   }
@@ -839,10 +852,11 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
 // Zoom to Township/Range/Section
 
     //Build City Dropdown panel
-    buildSelectPanel(panelurl + "2" , "trs", "Zoom to a Township-Range-Section", "selectTownshipPanel");
+    buildSelectPanel(townshipRangeSectionURL , "trs", "Zoom to a Township-Range-Section", "selectTownshipPanel");
+
   
     query("#selectTownshipPanel").on("change", function(e) {
-      return zoomToFeature(panelurl + "2", e.target.value, "trs");
+      return zoomToFeature(townshipRangeSectionURL, e.target.value, "trs");
     });
 
 ///////////////////////
@@ -888,7 +902,21 @@ panelurl = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Li
       return cityStr;
     
     });
+// Does not work, will need to combine township, range, section fields inside of ngs control points layer
+    buildSelectPanel(panelurl + "2" , "trs", "Zoom to a Township-Range-Section", "filterTownshipPanel");
+    var trs = document.getElementById("filterTownshipPanel");
+    var trsStr = query("#filterTownshipPanel").on("change", function(e) {
+      trsStr = e.target.value.toUpperCase();
+      console.log(trsStr + "this is a city string");
+      var searchQuery = trsStr.geometry;
+      console.log(searchQuery + " This is the searchQuery");
+      searchWidget.sources.items[0].filter.geometry = searchQuery;
+      console.log(searchQuery);
+      return trsStr;
+    
+  
 
+    });
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1024,6 +1052,45 @@ on(rangeSelect, "change", function(evt) {
 
  });
 
+function queryNGSPoints() {
+  var labinsURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer"
+  var queryTask = new QueryTask ({
+    url: labinsURL + "/0"
+  });
+  var query = new Query();
+  query.geometry = buffer;
+  query.returnGeometry = true;
+  query.spatialRelationship = "intersects";
+  queryTask.execute(query).then(function displayResults(results) {
+    console.log("executing display buffer");
+    bufferLayer.removeAll();
+    var features = results.features.map(function(graphic) {
+      graphic.symbol = {
+        type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+        style: "diamond",
+        size: 6.5,
+        color: "darkorange"
+      };
+      return graphic;
+    });
+    var numQuakes = features.length;
+    console.log(numQuakes + " points found");
+    bufferLayer.addMany(features);
+  });
+
+
+  /*
+  var query = swfwmdLayer.createQuery();
+  var labinsNGS = swfwmdLayer
+  query.geometry = buffer;
+  query.spatialRelationship = "intersects";
+  console.log(labinsNGS.queryFeatures(query));
+
+  return labinsNGS.queryFeatures(query);
+  */
+}
+
+//});
 function zoomToSectionFeature(panelurl, location, attribute) {
 
   var township = document.getElementById("selectNGSCountyPanel");
@@ -1041,7 +1108,7 @@ function zoomToSectionFeature(panelurl, location, attribute) {
   });
   var params = new Query({
     where:  "twn_ch = '" + strUser.substr(0,2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + rangeUser.substr(0,2) + "' AND rdir = '" + rangeUser.substr(2) + "' AND sec_ch = '" + sectionUser + "'",
-    returnGeometry: true
+    returnDistinctValues: true
   });
   task.execute(params)
     .then(function(response) {
@@ -1056,13 +1123,86 @@ var type = evt.target.value;
     var type = e.target.value;
     return zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
 
+  });
 });
-});
 
+var polySym = {
+  type: "simple-fill", // autocasts as new SimpleFillSymbol()
+  color: [140, 140, 222, 0.5],
+  outline: {
+    color: [0, 0, 0, 0.5],
+    width: 2
+  }
+};
+var TRSSelect = dom.byId("selectTownshipPanel");
 
+on(TRSSelect, "input", function(e) {
+  var type =  e.target.value;
 
+  var task = new QueryTask({
+    url: townshipRangeSectionURL
+  });
 
+  var params = new Query({
+    where: "trs = '" + type + "'",
+    returnGeometry: true
+  });
+  task.execute(params)
+  .then(function(response) {
+    console.log(response.features["0"].geometry);
+    console.log(response.features[0].geometry);
+    console.log(response.features[0].geometry + " TRS response FEATURES");
+    console.log(response.features["0"].geometry + " TRS response FEATURES");
 
-
+    buffer = geometryEngine.geodesicBuffer(response.features[0].geometry, 100, "feet");
     
+    console.log(typeof buffer);
+    console.log("buffer completed");
+    bufferLayer.add(new Graphic({
+      geometry: buffer,
+      symbol: polySym
+    }))
+    .then(queryNGSPoints)
+    .then(console.log("I queried"))
+    //.then(displayResults)
+    .then(console.log("I displayed results")); 
+  });
+});
+
+/*
+on(TRSSelect, "input", function(e) {
+  var type =  e.target.value;
+
+  var task = new QueryTask({
+    url: panelurl + "2"
+  });
+
+  var params = new Query({
+    where: "trs = '" + type + "'",
+    returnGeometry: true
+  });
+  task.execute(params)
+  .then(function(response) {
+    console.log(response.features["0"].geometry);
+    console.log(response.features[0].geometry);
+    console.log(response.features[0].geometry + " TRS response FEATURES");
+    console.log(response.features["0"].geometry + " TRS response FEATURES");
+    var params = new BufferParameters({
+      distances: [500],
+      unit: "feet",
+      geodesic: true,
+      geometries: geometries,
+      unionResults: false
+    });
+    buffer = geometryEngine.geodesicBuffer(response.features["0"].geometry, 100, "feet", false);
+    
+    console.log(typeof buffer);
+    console.log("buffer completed");
+    bufferLayer.add(new Graphic({
+      geometry: buffer,
+      symbol: polySym
+    }));
+    
+  });
+});*/
 });
