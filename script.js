@@ -1110,21 +1110,19 @@ function zoomToSectionFeature(panelurl, location, attribute) {
     where:  "twn_ch = '" + strUser.substr(0,2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + rangeUser.substr(0,2) + "' AND rdir = '" + rangeUser.substr(2) + "' AND sec_ch = '" + sectionUser + "'",
     returnDistinctValues: true
   });
+  console.log(params.where);
   task.execute(params)
     .then(function(response) {
-      console.log(response.features + "These are response features");
+      console.log(response.features);
       mapView.goTo(response.features);
     });
 }
-on(sectionSelect, "input", function(evt) {
-var type = evt.target.value;
 
   query("#selectNGSSectionPanel").on("change", function(e) {
     var type = e.target.value;
     return zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
 
   });
-});
 
 var polySym = {
   type: "simple-fill", // autocasts as new SimpleFillSymbol()

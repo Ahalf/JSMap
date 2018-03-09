@@ -9,6 +9,8 @@ require([
     "esri/geometry/geometryEngine",
     "esri/layers/GraphicsLayer",
     "esri/Graphic",
+    "esri/tasks/IdentifyTask",
+    "esri/tasks/support/IdentifyParameters",
   
   
     // Widgets
@@ -47,6 +49,8 @@ require([
       geometryEngine,
       GraphicsLayer,
       Graphic,
+      IdentifyTask,
+      IdentifyParameters,
       Basemaps, 
       Search, 
       Legend, 
@@ -444,12 +448,12 @@ require([
     }]
   });
 
-  //var controlPointsURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/FREAC/LABINS_2017_Pts_No_SWFMWD_3857/MapServer/0";
-  var controlPointsURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/0"
+  var controlPointsURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/FREAC/LABINS_2017_Pts_No_SWFMWD_3857/MapServer/0";
+  //var controlPointsURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/0"
   var controlPointsLayer = new FeatureLayer({
     url: controlPointsURL,
     title: "NGS Control Points" ,
-    visible: false,
+    visible: true,
     popupTemplate: NGSpopupTemplate
   
    });
@@ -461,7 +465,7 @@ require([
     sublayers: [{
       id: 0,
       title: "NGS Control Points", 
-      visible: true,
+      visible: false,
       popupTemplate:NGSpopupTemplate
     }, {
       id:1,
@@ -486,12 +490,12 @@ require([
       title: "Tide Interpolation Points",
       visible: false,
       popupTemplate: tideInterpPointsTemplate
-    },/* {
+    }, /*{
       id:6,
       title: "Geographic Names",
-      visible: false,
-      popupTemplate: geographicNamesTemplate
-    },*/ {
+      visible: false
+      //popupTemplate: geographicNamesTemplate
+    }, */{
       id:7,
       visible: false
     }, {
@@ -705,7 +709,7 @@ require([
         mapView.goTo(response.features);
         return response;})
       .then(createBuffer)
-      .then(queryFeaturesInBuffer);        
+      .then(queryFeaturesInBuffer);       
     }
 
     var polySym = {
@@ -733,7 +737,8 @@ require([
 
   function queryFeaturesInBuffer(buffer) {
     var controlPointsQueryTask = new QueryTask({
-      url: controlPointsURL
+      url: controlLinesURL + "0"
+      //url: controlPointsURL
     });
     console.log("creates querytask");
     var query = new Query({
@@ -745,10 +750,25 @@ require([
     console.log(query);
     controlPointsQueryTask.execute(query).then(function(result){
       console.log(result.features);
-
-
+      if (result.length > 0) {
+        mapView.popup.open({
+          features: result,
+          location: buffer
+        });
+      }
+      return result;
     });
     
+  }
+
+  function showPopup(response) {
+    if (response.length > 0) {
+      mapView.popup.open({
+        features: response,
+        location: buffer
+      });
+    }
+    dom.byId("mapViewDiv").style.cursor = "auto";
   }
 
   function displayResults(results) {
@@ -938,6 +958,76 @@ require([
   });*/
   //});
   
+  mapView.when(function() {
+    // executeIdentifyTask() is called each time the view is clicked
+    on(mapView, "click", executeIdentifyTask);
+
+    // Create identify task for the specified map service
+    identifyTask = new IdentifyTask(labinslayerURL);
+
+    // Set the parameters for the Identify
+    params = new IdentifyParameters();
+    params.tolerance = 100;
+    params.layerIds = [0, 1, 2];
+    params.layerOption = "all";
+    params.width = mapView.width;
+    params.height = mapView.height;
+  });
+
+  // Executes each time the view is clicked
+  function executeIdentifyTask(event) {
+    // Set the geometry to the location of the view click
+    params.geometry = event.mapPoint;
+    params.mapExtent = mapView.extent;
+    dom.byId("mapViewDiv").style.cursor = "wait";
+    console.log("I'm waiting.");
+
+    // This function returns a promise that resolves to an array of features
+    // A custom popupTemplate is set for each feature based on the layer it
+    // originates from
+    identifyTask.execute(params).then(function(response) {
+
+      var results = response.results;
+      console.log("I'm still waiting");
+      console.log(results);
+
+      return arrayUtils.map(results, function(result) {
+
+        console.log("Did the return happen?");
+        console.log(result.layerName);
+
+        var feature = result.feature;
+        var layerName = result.layerName;
+
+        feature.attributes.layerName = layerName;
+        if (layerName === 'Certified Corners') {
+          feature.popupTemplate = certifiedCornersTemplate;
+        } 
+        else if (layerName === 'Preliminary NGS Points') {
+          feature.popupTemplate = NGSPreliminarypopupTemplate;
+        }
+        else if (layerName === 'NGS Control Points') {
+          feature.popupTemplate = NGSpopupTemplate;
+        }
+        console.log(feature);
+        return feature;
+        
+      });
+    }).then(showPopup); // Send the array of features to showPopup()
+
+    // Shows the results of the Identify in a popup once the promise is resolved
+    function showPopup(response) {
+      if (response.length > 0) {
+        mapView.popup.open({
+          features: response,
+          location: event.mapPoint
+        });
+      }
+      dom.byId("mapViewDiv").style.cursor = "auto";
+    }
+}
+
+
   ////////////////////////////
   ///// Event Listeners //////
   ////////////////////////////
