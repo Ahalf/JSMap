@@ -1,2 +1,2 @@
 JSMap
-This is a map
+This is a map that i like
