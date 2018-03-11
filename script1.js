@@ -86,8 +86,8 @@ require([
    *********************************************************************/
   
   var NGSpopupTemplate = {
-    title: 'NGS Control Point: {objectid}',
-    content: "<p><b>(Latitude, Longitude): {dec_lat}, {dec_long}</b></p>" +
+    title: 'NGS Control Points: {objectid}',
+    content: "<p>(Latitude, Longitude): {dec_lat}, {dec_long}</p>" +
     "<p>County: {county}</p>" + 
     "<p>PID: {pid}</p>" + 
     "<p>Data Source: <a target='_blank' href={data_srce}>here</a></p>" +
@@ -269,7 +269,16 @@ require([
   className: "esri-icon-launch-link-external"
   }]
   };
-  
+
+
+  var parcelsTemplate = {
+  title: 'Parcels: {OBJECTID}',
+  content:
+  "<p>Parcel ID: {PARCEL_ID}</p>" +
+  "<p>City: {OWN_CITY}</p>" +
+  "<p>State: {OWN_STATE}</p>" +
+  "<p>Address: {PHY_ADDR1}</p>"
+  };
   
   //////////////////////
   // Load in the Maps //
@@ -478,15 +487,12 @@ require([
       visible: false,
       popupTemplate: certifiedCornersTemplate
     }, {
-      id:3,
-      visible: false 
-    }, {
-      id:4,
+      id:5,
       title: "Tide Stations",
       visible: false,
       popupTemplate: tideStationsTemplate
     }, {
-      id:5,
+      id:6,
       title: "Tide Interpolation Points",
       visible: false,
       popupTemplate: tideInterpPointsTemplate
@@ -496,16 +502,13 @@ require([
       visible: false
       //popupTemplate: geographicNamesTemplate
     }, */{
-      id:7,
-      visible: false
-    }, {
-      id:8,
+      id:9,
       title: "R-Monuments",
       visible: false,
       popupTemplate: rMonumentsTemplate
     }, {
-      id:9,
-      title: "Erosion Control Lines",
+      id:10,
+      title: "Erosion Control Line",
       visible: false,
       popupTemplate: erosionControlLineTemplate
     
@@ -552,6 +555,7 @@ require([
     id:5,
     title: "Parcels",
     visible: false,
+    popupTemplate: parcelsTemplate,
   }, {
     id:6,
     title: "Lakes, Ponds, and Reservoirs",
@@ -963,12 +967,12 @@ require([
     on(mapView, "click", executeIdentifyTask);
 
     // Create identify task for the specified map service
-    identifyTask = new IdentifyTask(labinslayerURL);
+    identifyTask = new IdentifyTask(controlLinesURL);
 
     // Set the parameters for the Identify
     params = new IdentifyParameters();
-    params.tolerance = 100;
-    params.layerIds = [0, 1, 2];
+    params.tolerance = 3;
+    params.layerIds = [0, 3, 5, 11];
     params.layerOption = "all";
     params.width = mapView.width;
     params.height = mapView.height;
@@ -989,26 +993,45 @@ require([
 
       var results = response.results;
       console.log("I'm still waiting");
-      console.log(results);
+      //console.log(results);
 
       return arrayUtils.map(results, function(result) {
 
         console.log("Did the return happen?");
-        console.log(result.layerName);
+        //console.log(result.layerName);
 
         var feature = result.feature;
         var layerName = result.layerName;
 
         feature.attributes.layerName = layerName;
-        if (layerName === 'Certified Corners') {
-          feature.popupTemplate = certifiedCornersTemplate;
+
+        console.log(layerName);
+        console.log(result);
+        if (layerName === 'USGS Quads') {
+          feature.popupTemplate = { // autocasts as new PopupTemplate()
+            title: "Quads",
+            content: "<b>tile_name:</b> {tile_name}" +
+              "<br><b>latitude:</b> {latitude}" +
+              "<br><b>longitude:</b> {longitude}" +
+              "<br><b>quad:</b> {quad}"
+          };
         } 
-        else if (layerName === 'Preliminary NGS Points') {
-          feature.popupTemplate = NGSPreliminarypopupTemplate;
+        else if (layerName === 'City Limits') {
+          feature.popupTemplate = { // autocasts as new PopupTemplate()
+            title: "City name: {name}",
+            content: "<b>county:</b> {county}" +
+              "<br><b>objectid:</b> {objectid}" +
+              "<br><b>tax_count:</b> {tax_count}" +
+              "<br><b>descript:</b> {descript}"
+          };
         }
-        else if (layerName === 'NGS Control Points') {
-          feature.popupTemplate = NGSpopupTemplate;
+        else if (layerName === 'Parcels') {
+          feature.popupTemplate = parcelsTemplate;
         }
+        else if (layerName === 'Soils June 2012 - Dept. of Agriculture') {
+          feature.popupTemplate = soilsTemplate;
+        }
+        
         console.log(feature);
         return feature;
         
