@@ -264,8 +264,8 @@ require([
   "<p>Description: {descript}</p>",
   
   actions: [{
-  title: "Visit the Labins Water Boundary Data Website",
-  id: "waterBoundaryData",
+  title: "Zoom to",
+  id: "",
   className: "esri-icon-launch-link-external"
   }]
   };
@@ -277,7 +277,13 @@ require([
   "<p>Parcel ID: {PARCEL_ID}</p>" +
   "<p>City: {OWN_CITY}</p>" +
   "<p>State: {OWN_STATE}</p>" +
-  "<p>Address: {PHY_ADDR1}</p>"
+  "<p>Address: {PHY_ADDR1}</p>",
+
+  actions: [{
+    title: "Visit the Labins Water Boundary Data Website",
+    id: "waterBoundaryData",
+    className: "esri-icon-launch-link-external"
+    }]
   };
 
 
@@ -958,7 +964,7 @@ require([
  // var type = evt.target.value;
 
  var querySection = dom.byId("selectNGSSectionPanel");
- on(querySection, "click", function(e) {
+ on(querySection, "change", function(e) {
    var type = e.target.value;
   zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
 });
@@ -994,7 +1000,7 @@ require([
     params.geometry = event.mapPoint;
     params.mapExtent = mapView.extent;
     dom.byId("mapViewDiv").style.cursor = "wait";
-    console.log("I'm waiting.");
+    //console.log("I'm waiting.");
 
     // This function returns a promise that resolves to an array of features
     // A custom popupTemplate is set for each feature based on the layer it
@@ -1042,7 +1048,7 @@ require([
           feature.popupTemplate = soilsTemplate;
         }
         
-        console.log(feature);
+        //console.log(feature);
         return feature;
         
       });
@@ -1050,7 +1056,7 @@ require([
 
     // Shows the results of the Identify in a popup once the promise is resolved
     function showPopup(response) {
-      console.log(reponse);
+      //console.log(response);
       if (response.length > 0) {
         mapView.popup.open({
           features: response,
@@ -1062,6 +1068,7 @@ require([
 }
 
 //////////////////////////////////// BUFFER IDENTIFY
+
 function bufferIdentify(buffer) {
 
   console.log("We've entered the buffer identify function");  
@@ -1079,15 +1086,17 @@ function bufferIdentify(buffer) {
   params.width = mapView.width;
   params.height = mapView.height;
 
+executeIdentifyTask();
+
 // Executes each time the view is clicked
 function executeIdentifyTask() {
   console.log("we've entered executeIdentifyTask function");
   console.log(buffer);
   // Set the geometry to the location of the view click
-  params.geometry = buffer
+  params.geometry = buffer;
   params.mapExtent = mapView.extent; 
   dom.byId("mapViewDiv").style.cursor = "wait";
-  console.log();
+  //console.log(buffer);
 
   // This function returns a promise that resolves to an array of features
   // A custom popupTemplate is set for each feature based on the layer it
@@ -1095,7 +1104,7 @@ function executeIdentifyTask() {
   identifyTask.execute(params).then(function(response) {
 
     var results = response.results;
-    console.log("I'm still waiting");
+    //console.log("I'm still waiting");
     //console.log(results);
 
     return arrayUtils.map(results, function(result) {
@@ -1135,7 +1144,8 @@ function executeIdentifyTask() {
         feature.popupTemplate = soilsTemplate;
       }
       
-      console.log(feature);
+      //console.log(feature);
+      //console.log("logged a feature");
       return feature;
       
     });
@@ -1143,11 +1153,12 @@ function executeIdentifyTask() {
 
   // Shows the results of the Identify in a popup once the promise is resolved
   function showPopup(response) {
-    console.log(reponse);
+    //console.log(response);
     if (response.length > 0) {
       mapView.popup.open({
         features: response,
-        location: event.mapPoint
+        location: buffer.centroid,
+        highlightEnabled: true
       });
     }
     dom.byId("mapViewDiv").style.cursor = "auto";
