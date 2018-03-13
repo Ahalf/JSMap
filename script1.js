@@ -11,6 +11,9 @@ require([
     "esri/Graphic",
     "esri/tasks/IdentifyTask",
     "esri/tasks/support/IdentifyParameters",
+    "esri/widgets/Popup/PopupViewModel",
+    "esri/symbols/SimpleFillSymbol",
+    "esri/symbols/SimpleLineSymbol",
   
   
     // Widgets
@@ -28,6 +31,7 @@ require([
     "dojo/dom",
     "dojo/dom-construct",
     "dojo/query",
+    "dojo/_base/Color",
   
   
     // Bootstrap
@@ -51,6 +55,9 @@ require([
       Graphic,
       IdentifyTask,
       IdentifyParameters,
+      PopupVM,
+      SimpleFillSymbol,
+      SimpleLineSymbol,
       Basemaps, 
       Search, 
       Legend, 
@@ -59,7 +66,7 @@ require([
       BasemapToggle, 
       ScaleBar, 
       Home,
-      watchUtils, arrayUtils, on, dom, domConstruct, query,
+      watchUtils, arrayUtils, on, dom, domConstruct, query, Color,
       Collapse, 
       Dropdown, 
       CalciteMaps, 
@@ -84,7 +91,13 @@ require([
   *
   *
    *********************************************************************/
-  
+  var customZoomAction = {  
+    title: "Zoom to",  
+    id: "custom-zoom",  
+    className: "esri-icon-zoom-in-magnifying-glass"  
+  };  
+
+
   var NGSpopupTemplate = {
     title: 'NGS Control Points: {objectid}',
     content: "<p>(Latitude, Longitude): {dec_lat}, {dec_long}</p>" +
@@ -253,7 +266,7 @@ require([
   //https://www.fgdl.org/metadata/metadata_archive/fgdl_html/nrcs_soils.htm
   //full key list for abbreviations
   var soilsTemplate = {
-  title: 'USDA Soils:',
+  title: 'USDA Soils: {muname}',
   content: "<p><b>Mapunit Name: {muname}</b></p>" + 
   "<p>Size (acres): {muacres}</p>" +
   "<p>Texture: {texture}</p>" +
@@ -262,13 +275,11 @@ require([
   "<p>Flooding Frequency ‐ Dominant Condition: {flodfreqdc}</p>" +
   "<p>Flooding Frequency ‐ Maximum: {flodfreqma}</p>" + 
   "<p>Description: {descript}</p>",
-  
-  actions: [{
-  title: "Zoom to",
-  id: "",
-  className: "esri-icon-launch-link-external"
-  }]
+
+  actions: [customZoomAction]
   };
+  soilsTemplate.overwriteActions = true;
+
 
 
   var parcelsTemplate = {
@@ -283,8 +294,9 @@ require([
     title: "Visit the Labins Water Boundary Data Website",
     id: "waterBoundaryData",
     className: "esri-icon-launch-link-external"
-    }]
+    }, customZoomAction]
   };
+  parcelsTemplate.overwriteActions = true;
 
 
   //blmid, quad name, ccr links
@@ -614,13 +626,14 @@ require([
 
   var bufferLayer = new GraphicsLayer();
   
+  var selectionLayer = new GraphicsLayer();
   /////////////////////
   // Create the map ///
   /////////////////////
   
     var map = new Map({
       basemap: "topo",
-      layers: [labinsLayer, swfwmdLayer, controlLinesLayer , townshipRangeSectionLayer, controlPointsLayer, bufferLayer]
+      layers: [labinsLayer, swfwmdLayer, controlLinesLayer , townshipRangeSectionLayer, controlPointsLayer, bufferLayer, selectionLayer]
     });
   
   
@@ -992,6 +1005,7 @@ require([
     params.layerOption = "all";
     params.width = mapView.width;
     params.height = mapView.height;
+    params.returnGeometry = true;
   });
 
   // Executes each time the view is clicked
@@ -1081,10 +1095,11 @@ function bufferIdentify(buffer) {
   // Set the parameters for the Identify
   params = new IdentifyParameters();
   params.tolerance = 10;
-  params.layerIds = [0, 3, 5, 11];
+  params.layerIds = [0, 3, 11];
   params.layerOption = "all";
   params.width = mapView.width;
   params.height = mapView.height;
+  params.returnGeometry = true;
 
 executeIdentifyTask();
 
@@ -1201,6 +1216,25 @@ function executeIdentifyTask() {
         window.open("https://nationalmap.gov/");
     }
     });
+
+    var highlightSymbol = new SimpleFillSymbol(
+      SimpleFillSymbol.STYLE_SOLID,
+      new SimpleLineSymbol(
+        SimpleLineSymbol.STYLE_SOLID,
+        new Color([255, 0, 0]), 1),
+      new Color([125, 125, 125, 0.35])
+    );
+    //Custom Zoom to feature
+    mapView.popup.on("trigger-action", function(evt) {  
+      if(evt.action.id === "custom-zoom"){ 
+        selectionLayer.graphics.removeAll();
+        console.log(mapView.popup.selectedFeature); 
+        mapView.goTo({target: mapView.popup.selectedFeature.geometry,
+                      zoom: 17});
+        highlightGraphic = new Graphic(mapView.popup.selectedFeature.geometry, highlightSymbol);
+        selectionLayer.graphics.add(highlightGraphic);  
+      };
+      }); 
   
   /////////////
   // Widgets //
