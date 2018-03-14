@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <meta name="description" content="ArcGIS JS v4, Calcite Maps and Bootstrap Example">
+  <meta name="description" content="Labins Explorer">
  
-  <title>ArcGIS JS v4, Calcite Maps and Bootstrap Example</title>
+  <title>LABINS Explorer</title>
 
   <!-- Calcite Maps Bootstrap -->
   <link rel="stylesheet" href="https://esri.github.io/calcite-maps/dist/css/calcite-maps-bootstrap.min-v0.6.css">
@@ -16,6 +16,7 @@
   <!-- ArcGIS JS 4 -->
   <link rel="stylesheet" href="https://js.arcgis.com/4.6/esri/css/main.css">
 
+
   <style>
     html,
     body {
@@ -23,6 +24,14 @@
       padding: 0;
       height: 100%;
     }
+
+    
+html, body, #viewDiv {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
 
     .esri-popup .esri-popup-header .esri-title {
       font-size: 18px;
@@ -32,6 +41,75 @@
     .esri-popup .esri-popup-body .esri-popup-content {
       font-size: 14px;
     }
+    .esri-ui-top-left {
+      top: 100;
+      left: 500;
+    }
+
+    #overviewDiv {
+      position: absolute;
+      top: 685px;
+      right: 12px;
+      width: 300px;
+      height: 200px;
+      border: 1px solid black;
+      z-index: 1;
+    }
+
+    #extentDiv {
+      background-color: rgba(0, 0, 0, 0.5);
+      position: absolute;
+      z-index: 2;
+    }
+
+    .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+  
+  .switch input {display:none;}
+  
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  input:checked + .slider {
+    background-color: #2196F3;
+  }
+  
+  input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+  }
+  
+  input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+
+    
   </style>
 
 </head>
@@ -70,6 +148,14 @@
     <!-- Search -->
     <ul class="nav navbar-nav calcite-nav">
       <li>
+      <label class="switch">
+        <input type="checkbox">
+        <span class="slider"></span>
+      </label>
+      </li>
+    </ul>
+    <ul class="nav navbar-nav calcite-nav">
+      <li>
         <div class="calcite-navbar-search calcite-search-expander">
           <div id="searchWidgetDiv1"></div>
         </div>
@@ -82,6 +168,8 @@
 
   <div class="calcite-map calcite-map-absolute">
     <div id="mapViewDiv"></div>
+    <div id="overviewDiv">
+      <div id="extentDiv"></div>
   </div>
 
   <!-- /.calcite-map -->
