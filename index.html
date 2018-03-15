@@ -65,8 +65,8 @@ html, body, #viewDiv {
     .switch {
     position: relative;
     display: inline-block;
-    width: 60px;
-    height: 34px;
+    width: 100px;
+    height: 25px;
   }
   
   .switch input {display:none;}
@@ -86,10 +86,10 @@ html, body, #viewDiv {
   .slider:before {
     position: absolute;
     content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
+    height: 20px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
     background-color: white;
     -webkit-transition: .4s;
     transition: .4s;
@@ -104,10 +104,18 @@ html, body, #viewDiv {
   }
   
   input:checked + .slider:before {
-    -webkit-transform: translateX(26px);
-    -ms-transform: translateX(26px);
-    transform: translateX(26px);
+    -webkit-transform: translateX(75px);
+    -ms-transform: translateX(75px);
+    transform: translateX(75px);
   }
+
+  .esri-basemap-toggle__image {
+    background-color: #fff;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 50% 25%;
+    background-image: url(../themes/base/images/basemap-toggle-64.svg);
+}
 
     
   </style>
@@ -130,6 +138,15 @@ html, body, #viewDiv {
         </div>
       </a>
       <ul class="dropdown-menu" role="menu">
+        <li><a role="menuitem" tabindex="0" href="#" data-target="#panelIdentifyToggle" aria-haspopup="true"><span class="glyphicon glyphicon-info-sign"></span> Identify Toggle</a>
+          <ul class="nav navbar-nav calcite-nav">
+            <li>
+            <label class="switch">
+              <input type="checkbox" id="identifyToggle">
+              <span class="slider"></span>
+            </label>
+            </li>
+          </ul></li>
         <li><a role="menuitem" tabindex="0" href="#" data-target="#panelBasemaps" aria-haspopup="true"><span class="glyphicon glyphicon-th-large"></span> Basemaps</a></li>
         <li><a role="button" data-target="#panelLayer" aria-haspopup="true"><span class="glyphicon glyphicon-flag"></span> Zoom to Feature</a></li>
         <li><a role="button" data-target="#panelFilterLayer" aria-haspopup="true"><span class="glyphicon glyphicon-flag"></span> Filter Feature</a></li>
@@ -146,14 +163,6 @@ html, body, #viewDiv {
       <span class="calcite-title-sub hidden-xs">Land Boundary Information System: Online Information and Maps for the State of Florida</span>
     </div>
     <!-- Search -->
-    <ul class="nav navbar-nav calcite-nav">
-      <li>
-      <label class="switch">
-        <input type="checkbox">
-        <span class="slider"></span>
-      </label>
-      </li>
-    </ul>
     <ul class="nav navbar-nav calcite-nav">
       <li>
         <div class="calcite-navbar-search calcite-search-expander">
@@ -177,6 +186,11 @@ html, body, #viewDiv {
   <!-- Panels -->
 
   <div class="calcite-panels calcite-panels-right calcite-text-light calcite-bg-dark panel-group">
+
+    <!-- Panel - Identify Toggle -->
+
+    
+
 
 
 
