@@ -298,6 +298,21 @@ require([
     };
     parcelsTemplate.overwriteActions = true;
 
+    var cityLimitsTemplate = { // autocasts as new PopupTemplate()
+      title: "City name: {name}",
+      content: "<b>county:</b> {county}" +
+        "<br><b>objectid:</b> {objectid}" +
+        "<br><b>tax_count:</b> {tax_count}" +
+        "<br><b>descript:</b> {descript}"
+    };
+
+    var quadsTemplate = { // autocasts as new PopupTemplate()
+      title: "Quads",
+      content: "<b>tile_name:</b> {tile_name}" +
+        "<br><b>latitude:</b> {latitude}" +
+        "<br><b>longitude:</b> {longitude}" +
+        "<br><b>quad:</b> {quad}"
+    };
 
     //blmid, quad name, ccr links
     var CCRTemplate = {
@@ -578,6 +593,7 @@ require([
         id: 3,
         title: "City Limits",
         visible: false,
+        cityLimitsTemplate,
       }, {
         id: 4,
         title: "County Boundaries",
@@ -1114,31 +1130,79 @@ require([
 
     });
 
-    // on(sectionSelect, "input", function(evt) {
-    // var type = evt.target.value;
-
     var querySection = dom.byId("selectNGSSectionPanel");
     on(querySection, "change", function (e) {
       var type = e.target.value;
       zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
     });
-    /*
-        query("#selectNGSSectionPanel").on("change", function(e) {
-      
-          
-          var type = e.target.value;
-        zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch").then(queryFeaturesInBuffer);
-      
-      });*/
-    //});
 
-    var checkToggleBtn = document.getElementById("identifyToggle");
-    mapView.on("click", function () {
-      console.log("the map was clicked");
-      console.log(mapView.popup.destroyed);
-      if (checkToggleBtn.checked) {
-        console.log("the toggle button is checked");
-        
+///////////////////////////////
+//// IdentifyTask on Click ////
+///////////////////////////////
+
+var layerNames = ['City Limits', 'USGS Quads', 'Parcels', 'Soils'];
+var popupTemplates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTemplate];
+var layerArray = [0, 3, 5, 11];
+
+popupElements = []
+
+on(mapView, "click", identifyFeatures(controlLinesURL, layerArray, layerNames, popupTemplates, event.mapPoint));
+
+function identifyFeatures (url, layerArray, layerNames, popupTemplates, geometry) {
+
+    identifyTask = new identifyTask(url);
+
+    params = IdentifyParameters();
+    params.tolerance = 3;
+    params.layerIds = layerArray
+    params.layerOption = "all";
+    params.width = mapView.width;
+    params.height = mapView.height;
+    params.returnGeometry = true;
+
+    executeIdentifyTask();
+
+    function executeIdentifyTask(event) {
+        // Set the geometry to the location of the view click
+        params.geometry = geometry;
+        params.mapExtent = mapView.extent;
+        dom.byId("mapViewDiv").style.cursor = "wait";
+        //console.log("I'm waiting.");
+  
+        // This function returns a promise that resolves to an array of features
+        // A custom popupTemplate is set for each feature based on the layer it
+        // originates from
+        identifyTask.execute(params).then(function (response) {
+  
+          var results = response.results;
+          //console.log("I'm still waiting");
+          //console.log(results);
+  
+          return arrayUtils.map(results, function (result) {
+  
+            //console.log("Did the return happen?");
+            //console.log(result.layerName);
+  
+            var feature = result.feature;
+            var layerName = result.layerName;
+  
+            feature.attributes.layerName = layerName;
+
+            for (i = 0; i < layerNames.length; i++) {
+                if(layerName === layerNames[i]) {
+                    feature.popupTemplate = popupTemplates[i];
+                }
+            }
+              console.log(feature);
+              return feature;
+    
+            });
+}).then(popupElements.concat(feature));
+
+console.log(popupElements);
+    };
+  }
+/*
           // executeIdentifyTask() is called each time the view is clicked
           on(mapView, "click", executeIdentifyTask);
     
@@ -1226,11 +1290,8 @@ require([
             dom.byId("mapViewDiv").style.cursor = "auto";
           }
         }
-      } else {
-        
-      } 
     });
-
+*/
     /*
     */
 
@@ -1323,7 +1384,8 @@ require([
 
         // Shows the results of the Identify in a popup once the promise is resolved
         function showPopup(response) {
-          //console.log(response);
+          console.log(typeof response);
+          console.log(response);
           if (response.length > 0) {
             mapView.popup.open({
               features: response,
