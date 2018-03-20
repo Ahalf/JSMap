@@ -1,12 +1,4 @@
-	//function to build dropdown of all cities
-  buildSelectPanel(panelurl + "3" , "name", "Filter by City", "filterCityPanel");
-
-	
-	//on change, get the value (name) of the city
-    var city = document.getElementById("filterCityPanel");
-    var cityStr = query("#filterCityPanel").on("change", function(e) {
-      console.log(e.target.value + "target value");
-      require([
+require([
   // ArcGIS
   "esri/Map",
   "esri/views/MapView",
@@ -1708,22 +1700,3 @@ var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTempla
 
 
   });
-      var task = new QueryTask({
-        url: url,
-      });
-    
-      var params = new Query();
-      params.returnGeometry = true;
-      params.where = "name = '" + e.target.value + "'";
-      params.outFields = ["name"];
-
-      task.execute(params)
-      .then(function(response) {
-      response.features[0].geometry;
-	  //set definition expression to reflect dropdown selection
-      controlLines.findSublayerById(3).definitionExpression = "name = '" + response.features[0].attributes.name + "'";
-	  
-      searchWidget.sources.items[0].filter.geometry = response.features[0].geometry;
-      }) 
-    });
-	
