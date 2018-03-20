@@ -804,12 +804,14 @@ require([
         });
     }
 
-    function showPopup(geometry) {
+    function showPopup(response) {
+      console.log("into the showPopup");
       console.log(response);
-      if (response.length > 0) {
+      console.log(bufferElements);
+      if (bufferElements.length > 0) {
         mapView.popup.open({
-          features: response,
-          location: geometry,
+          features: bufferElements,
+          location: geometry.centroid
         });
       }
       dom.byId("mapViewDiv").style.cursor = "auto";
@@ -844,7 +846,10 @@ require([
         .then(createBuffer)
         //.then(queryFeaturesInBuffer)
         .then(function (response) {
-          bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response)});
+        bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response)
+        bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response)
+      })
+      .then(showPopup);
     }
         //.then(function (response) {concatIdentify(response)})
         //.then(showPopup(bufferElements));
@@ -1423,8 +1428,11 @@ mapView.on("double-click", function(evt) {
 function concatIdentify (response) {
 
   
-  bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response);
-  bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response);
+  bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response)
+  .then(console.log("First buffer done"))
+  .then(bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response))
+  .then(console.log("second buffer done"));
+  //.then(showPopup(bufferElements));
 }
 
 function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
@@ -1486,17 +1494,16 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
         //console.log("after push");
         //console.log(bufferElements);
         return feature;
-        dom.byId("mapViewDiv").style.cursor = "auto";
       });
-    }).then(showPopup); // Send the array of features to showPopup()
+    });//.then(showPopup); // Send the array of features to showPopup()
     // Shows the results of the Identify in a popup once the promise is resolved
     function showPopup(response) {
-      console.log(typeof response);
+      console.log(response);
       console.log(bufferElements);
-      if (response.length > 0) {
+      if (bufferElements.length > 0) {
         mapView.popup.open({
-          features: response,
-          location: geometry.centroid
+          features: bufferElements,
+          location: response.geometry.centroid
         });
       }
       dom.byId("mapViewDiv").style.cursor = "auto";
