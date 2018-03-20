@@ -1,4 +1,12 @@
-require([
+	//function to build dropdown of all cities
+  buildSelectPanel(panelurl + "3" , "name", "Filter by City", "filterCityPanel");
+
+	
+	//on change, get the value (name) of the city
+    var city = document.getElementById("filterCityPanel");
+    var cityStr = query("#filterCityPanel").on("change", function(e) {
+      console.log(e.target.value + "target value");
+      require([
   // ArcGIS
   "esri/Map",
   "esri/views/MapView",
@@ -333,7 +341,7 @@ require([
 
     /////https://developers.arcgis.com/javascript/latest/sample-code/layers-mapimagelayer-definitionexpression/index.html
     //You can set definition expressions through the sublayers in a mapimagelayer
-
+/*
     // Geographic Names Layer
     var geoNamesLayer = new MapImageLayer({
       url: "https://services.nationalmap.gov/arcgis/rest/services/geonames/MapServer",
@@ -502,9 +510,9 @@ require([
 
       }]
     });
-
-    var controlPointsURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/FREAC/LABINS_2017_Pts_No_SWFMWD_3857/MapServer/0";
-    //var controlPointsURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/0"
+*/
+    //var controlPointsURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/FREAC/LABINS_2017_Pts_No_SWFMWD_3857/MapServer/0";
+    var controlPointsURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/0"
     var controlPointsLayer = new FeatureLayer({
       url: controlPointsURL,
       title: "NGS Control Points",
@@ -804,9 +812,18 @@ require([
         });
     }
 
+    function showPopup(geometry) {
+      console.log(response);
+      if (response.length > 0) {
+        mapView.popup.open({
+          features: response,
+          location: geometry,
+        });
+      }
+      dom.byId("mapViewDiv").style.cursor = "auto";
+    }
 
-
-
+    var bufferElements = [];
 
     function zoomToSectionFeature(panelurl, location, attribute) {
 
@@ -834,9 +851,14 @@ require([
         })
         .then(createBuffer)
         //.then(queryFeaturesInBuffer)
-        .then(bufferIdentify);
+        .then(function (response) {
+          bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response)});
     }
+        //.then(function (response) {concatIdentify(response)})
+        //.then(showPopup(bufferElements));
 
+        //second bufferIdentify call
+     //bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response) 
     var polySym = {
       type: "simple-fill", // autocasts as new SimpleFillSymbol()
       color: [140, 140, 222, 0.5],
@@ -1139,7 +1161,7 @@ require([
 ///////////////////////////////
 //// IdentifyTask on Click ////
 ///////////////////////////////
-
+/*
 var layerNames = ['City Limits', 'USGS Quads', 'Parcels', 'Soils'];
 var popupTemplates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTemplate];
 var layerArray = [0, 3, 5, 11];
@@ -1202,9 +1224,16 @@ function identifyFeatures (url, layerArray, layerNames, popupTemplates, geometry
 console.log(popupElements);
     };
   }
-/*
+*/
+// disable current functionality for doubleclick
+mapView.on("double-click", function(evt) {
+  evt.stopPropagation();
+  console.info(evt);
+});
+
+
           // executeIdentifyTask() is called each time the view is clicked
-          on(mapView, "click", executeIdentifyTask);
+          on(mapView, "double-click", executeIdentifyTask);
     
           // Create identify task for the specified map service
           identifyTask = new IdentifyTask(controlLinesURL);
@@ -1290,15 +1319,15 @@ console.log(popupElements);
             dom.byId("mapViewDiv").style.cursor = "auto";
           }
         }
-    });
-*/
+//    });
+
     /*
     */
 
     /////////////////////////
     //// Buffer Identify ////
     /////////////////////////
-
+/*
     function bufferIdentify(buffer) {
 
       console.log("We've entered the buffer identify function");
@@ -1397,8 +1426,93 @@ console.log(popupElements);
       }
     }
 
+*/
 
+function concatIdentify (response) {
 
+  
+  bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response);
+  bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response);
+}
+
+function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
+
+  console.log("We've entered the buffer identify function");
+
+  console.log(geometry);
+
+  // Create identify task for the specified map service
+  identifyTask = new IdentifyTask(url);
+
+  // Set the parameters for the Identify
+  params = new IdentifyParameters();
+  params.tolerance = 10;
+  params.layerIds = layerArray;
+  params.layerOption = "all";
+  params.width = mapView.width;
+  params.height = mapView.height;
+  params.returnGeometry = true;
+
+  executeIdentifyTask();
+
+  // Executes each time the view is clicked
+  function executeIdentifyTask() {
+    console.log("we've entered executeIdentifyTask function");
+    console.log(geometry);
+    // Set the geometry to the location of the view click
+    params.geometry = geometry;
+    params.mapExtent = mapView.extent;
+    dom.byId("mapViewDiv").style.cursor = "wait";
+    //console.log(buffer);
+
+    // This function returns a promise that resolves to an array of features
+    // A custom popupTemplate is set for each feature based on the layer it
+    // originates from
+    identifyTask.execute(params).then(function (response) {
+
+      var results = response.results;
+      console.log("we've executed the identifyTask");
+      //console.log(results);
+
+      return arrayUtils.map(results, function (result) {
+
+        console.log("Did the return happen?");
+        //console.log(result.layerName);
+
+        var feature = result.feature;
+        var layerName = result.layerName;
+
+        feature.attributes.layerName = layerName;
+
+        for (i = 0; i < names.length; i++) {
+          if(layerName === names[i]) {
+              feature.popupTemplate = templates[i];
+          }
+      }
+        //console.log("before push");
+        bufferElements.push(feature);
+        //console.log("after push");
+        //console.log(bufferElements);
+        return feature;
+        dom.byId("mapViewDiv").style.cursor = "auto";
+      });
+    }).then(showPopup); // Send the array of features to showPopup()
+    // Shows the results of the Identify in a popup once the promise is resolved
+    function showPopup(response) {
+      console.log(typeof response);
+      console.log(bufferElements);
+      if (response.length > 0) {
+        mapView.popup.open({
+          features: response,
+          location: geometry.centroid
+        });
+      }
+      dom.byId("mapViewDiv").style.cursor = "auto";
+    }
+  }
+}
+var names = ['City Limits', 'USGS Quads', 'Parcels', 'Soils June 2012 - Dept. of Agriculture']
+var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTemplate]
 
     //////////////////////////////////
     //// Search Widget Text Search ///
@@ -1594,3 +1708,22 @@ console.log(popupElements);
 
 
   });
+      var task = new QueryTask({
+        url: url,
+      });
+    
+      var params = new Query();
+      params.returnGeometry = true;
+      params.where = "name = '" + e.target.value + "'";
+      params.outFields = ["name"];
+
+      task.execute(params)
+      .then(function(response) {
+      response.features[0].geometry;
+	  //set definition expression to reflect dropdown selection
+      controlLines.findSublayerById(3).definitionExpression = "name = '" + response.features[0].attributes.name + "'";
+	  
+      searchWidget.sources.items[0].filter.geometry = response.features[0].geometry;
+      }) 
+    });
+	
