@@ -91,7 +91,10 @@ require([
     *
     *
      *********************************************************************/
-    var customZoomAction = {
+
+
+
+     var customZoomAction = {
       title: "Zoom to",
       id: "custom-zoom",
       className: "esri-icon-zoom-in-magnifying-glass"
@@ -221,7 +224,7 @@ require([
 
 
     var geonamesTemplate = {
-      title: '{gaz_featureclass}',
+      title: 'Geographic Names',
       content: "<p><b>Object ID: {OBJECTID}</b></p>" +
         "<p>Feature Name: {gaz_name}</p>" +
         "<p>Feature Type: {gaz_featureclass}</p>" +
@@ -508,11 +511,16 @@ require([
     var controlPointsLayer = new FeatureLayer({
       url: controlPointsURL,
       title: "NGS Control Points",
-      visible: true,
+      visible: false,
       popupTemplate: NGSpopupTemplate
 
     });
-
+/*
+    var labinslayerURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer";
+    var labinsLayer = new MapImageLayer({
+      url: labinslayerURL
+    });
+*/
     var labinslayerURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer";
     var labinsLayer = new MapImageLayer({
       url: labinslayerURL,
@@ -520,43 +528,56 @@ require([
       sublayers: [{
         id: 0,
         title: "NGS Control Points",
-        visible: false,
+        visible: true,
         popupTemplate: NGSpopupTemplate
       }, {
         id: 1,
         title: "Preliminary NGS Points",
-        visible: false,
+        visible: true,
         popupTemplate: NGSPreliminarypopupTemplate
       }, {
         id: 2,
         title: "Certified Corners",
-        visible: false,
+        visible: true,
         popupTemplate: certifiedCornersTemplate
+      },  {
+        id: 3,
+        title: "Certified Corner (BLMID) Labels",
+        visible: false
+      },  {
+        id: 4,
+        title: "CCBLMID All Labels",
+        visible: false
       }, {
         id: 5,
         title: "Tide Stations",
-        visible: false,
+        visible: true,
         popupTemplate: tideStationsTemplate
       }, {
         id: 6,
         title: "Tide Interpolation Points",
-        visible: false,
+        visible: true,
         popupTemplate: tideInterpPointsTemplate
-      }, /*{
-      id:6,
-      title: "Geographic Names",
-      visible: false
-      //popupTemplate: geographicNamesTemplate
-    }, */{
-        id: 9,
-        title: "R-Monuments",
-        visible: false,
-        popupTemplate: rMonumentsTemplate
       }, {
-        id: 10,
-        title: "Erosion Control Line",
+        id:7,
+        title: "Geographic Names",
         visible: false,
-        popupTemplate: erosionControlLineTemplate
+        popupTemplate: geonamesTemplate
+      }, {
+      id:8,
+      title: "CCR with Images",
+      visible: true,
+      popupTemplate: CCRTemplate
+      }, {
+      id: 9,
+      title: "R-Monuments",
+      visible: true,
+      popupTemplate: rMonumentsTemplate
+    }, {
+      id: 10,
+      title: "Erosion Control Line",
+      visible: true,
+      popupTemplate: erosionControlLineTemplate
 
 
 
@@ -718,6 +739,7 @@ require([
         });
       }
 
+      
       function updateOverviewExtent() {
         // Update the overview extent by converting the SceneView extent to the
         // MapView screen coordinates and updating the extentDiv position.
@@ -747,8 +769,8 @@ require([
       var params = new Query({
         where: "1 = 1 AND " + attribute + " IS NOT NULL",
         outFields: [attribute],
-        returnDistinctValues: true
-      });
+        returnDistinctValues: true,
+        });
 
       var option = domConstruct.create("option");
       option.text = zoomParam;
@@ -761,7 +783,9 @@ require([
           var values = features.map(function (feature) {
             return feature.attributes[attribute];
           });
+          console.log(response);
           return values;
+
         })/*
         .then(function(values) {
         var uniqueValues = [];
@@ -809,8 +833,8 @@ require([
       console.log(bufferElements);
       if (bufferElements.length > 0) {
         mapView.popup.open({
-          features: bufferElements,
-          location: bufferElements.geometry,
+          features: bufferElements
+          //location: bufferElements.geometry,
         });
       } else {console.log("showPopup didn't work")};
       dom.byId("mapViewDiv").style.cursor = "auto";
@@ -857,10 +881,10 @@ require([
         // gets put into bufferElements before the second function
         // runs then .push() behaves properly
         .then(function (response) {
-        bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response);
-        console.log(bufferElements.length);
-        bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response);
-        console.log(bufferElements.length);
+        bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response)
+        //.then(console.log(bufferElements.length))
+        bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response)
+        //.then(console.log(bufferElements.length));
       })
       .then(showPopup);
     }
@@ -1028,11 +1052,23 @@ require([
     var cityStr = query("#filterCityPanel").on("change", function (e) {
       cityStr = e.target.value.toUpperCase();
       console.log(cityStr + "this is a city string");
-      var searchQuery = cityStr.geometry;
-      console.log(searchQuery + " This is the searchQuery");
-      searchWidget.sources.items[0].filter.geometry = searchQuery;
-      console.log(searchQuery);
-      return cityStr;
+      
+      
+      var task = new QueryTask({
+        url: controlLinesURL + "3"
+      });
+
+      var params = new Query({
+        where: "name = '" + cityStr + "'",
+        returnGeometry: true
+        });
+        task.execute(params).then(function (result) {
+        
+        console.log("before search" , searchWidget.sources.items[0].filter.geometry);
+        searchWidget.sources.items[0].filter.geometry = result.features[0].geometry;
+        console.log("after search" , searchWidget.sources.items[0].filter.geometry);
+
+        })
 
     });
     // Does not work, will need to combine township, range, section fields inside of ngs control points layer
@@ -1044,7 +1080,7 @@ require([
       var searchQuery = trsStr.geometry;
       console.log(searchQuery + " This is the searchQuery");
       searchWidget.sources.items[0].filter.geometry = searchQuery;
-      console.log(searchQuery);
+      console.log(e);
       return trsStr;
 
 
@@ -1471,7 +1507,7 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
   // Executes each time the view is clicked
   function executeIdentifyTask() {
     console.log("we've entered executeIdentifyTask function");
-    console.log(geometry);
+    //console.log(geometry);
     // Set the geometry to the location of the view click
     params.geometry = geometry;
     params.mapExtent = mapView.extent;
@@ -1553,7 +1589,7 @@ var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTempla
             }]
           }
         },
-        searchFields: ["pid"],
+        searchFields: ["pid", "datasheet2", "county"],
         displayField: "pid",
         exactMatch: false,
         outFields: ["dec_lat", "dec_long", "pid", "county", "data_srce", "datasheet2", "quad"],
