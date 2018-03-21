@@ -784,7 +784,7 @@ require([
     }
 
 
-
+// Input location from drop down, zoom to it and highlight
     function zoomToFeature(panelurl, location, attribute) {
 
       var task = new QueryTask({
@@ -804,22 +804,26 @@ require([
         });
     }
 
-    function showPopup(response) {
+    function showPopup() {
       console.log("into the showPopup");
-      console.log(response);
       console.log(bufferElements);
       if (bufferElements.length > 0) {
         mapView.popup.open({
           features: bufferElements,
-          location: geometry.centroid
+          location: bufferElements.geometry,
         });
-      }
+      } else {console.log("showPopup didn't work")};
       dom.byId("mapViewDiv").style.cursor = "auto";
+      //clear array before next call
+      bufferElements.length = 0;
     }
 
     var bufferElements = [];
 
     function zoomToSectionFeature(panelurl, location, attribute) {
+      
+      // Clear existing bufferElement items each time the zoom to feature runs
+      //bufferElements.length = 0;
 
       var township = document.getElementById("selectNGSCountyPanel");
       var strUser = township.options[township.selectedIndex].text;
@@ -845,9 +849,18 @@ require([
         })
         .then(createBuffer)
         //.then(queryFeaturesInBuffer)
+
+        //This should append all features of both 
+        //buffers to popup function that happes after
+
+        //What I can see is an entire array with nexted arrays
+        // gets put into bufferElements before the second function
+        // runs then .push() behaves properly
         .then(function (response) {
-        bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response)
-        bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response)
+        bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response);
+        console.log(bufferElements.length);
+        bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response);
+        console.log(bufferElements.length);
       })
       .then(showPopup);
     }
@@ -1437,9 +1450,9 @@ function concatIdentify (response) {
 
 function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
 
-  console.log("We've entered the buffer identify function");
+  //console.log("We've entered the buffer identify function");
 
-  console.log(geometry);
+  //console.log(geometry);
 
   // Create identify task for the specified map service
   identifyTask = new IdentifyTask(url);
@@ -1476,7 +1489,7 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
 
       return arrayUtils.map(results, function (result) {
 
-        console.log("Did the return happen?");
+        //console.log("Did the return happen?");
         //console.log(result.layerName);
 
         var feature = result.feature;
@@ -1489,25 +1502,25 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
               feature.popupTemplate = templates[i];
           }
       }
-        //console.log("before push");
         bufferElements.push(feature);
-        //console.log("after push");
-        //console.log(bufferElements);
+        console.log(bufferElements);
         return feature;
       });
     });//.then(showPopup); // Send the array of features to showPopup()
     // Shows the results of the Identify in a popup once the promise is resolved
-    function showPopup(response) {
+    
+    /*function showPopup(response) {
+      
       console.log(response);
       console.log(bufferElements);
       if (bufferElements.length > 0) {
         mapView.popup.open({
           features: bufferElements,
-          location: response.geometry.centroid
+          location: buffer.geometry
         });
       }
       dom.byId("mapViewDiv").style.cursor = "auto";
-    }
+    }*/
   }
 }
 var names = ['City Limits', 'USGS Quads', 'Parcels', 'Soils June 2012 - Dept. of Agriculture']
