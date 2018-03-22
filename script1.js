@@ -1726,16 +1726,6 @@ var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTempla
       printServiceUrl: "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
     });
 
-    // BasemapToggle
-    var basemapToggle = new BasemapToggle({
-      view: mapView,
-      secondBasemap: "satellite"
-    });
-    mapView.ui.add({
-      component: basemapToggle, 
-      position: "bottom-right", 
-      index: 1});
-
     // Scalebar
     var scaleBar = new ScaleBar({
       view: mapView
