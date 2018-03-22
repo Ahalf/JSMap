@@ -16,105 +16,17 @@
   <!-- ArcGIS JS 4 -->
   <link rel="stylesheet" href="https://js.arcgis.com/4.6/esri/css/main.css">
 
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="https://js.arcgis.com/4.6/esri/css/main.css">
+
+  <link rel="stylesheet" href="styles.css">
 
   <style>
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-    }
 
-    
-html, body, #viewDiv {
-    padding: 0;
-    margin: 0;
-    height: 100%;
-    width: 100%;
-}
 
-    .esri-popup .esri-popup-header .esri-title {
-      font-size: 18px;
-      font-weight: bolder;
-    }
 
-    .esri-popup .esri-popup-body .esri-popup-content {
-      font-size: 14px;
-    }
-    .esri-ui-top-left {
-      top: 100;
-      left: 500;
-    }
 
-    #overviewDiv {
-      position: absolute;
-      top: 685px;
-      right: 12px;
-      width: 300px;
-      height: 200px;
-      border: 1px solid black;
-      z-index: 1;
-    }
 
-    #extentDiv {
-      background-color: rgba(0, 0, 0, 0.5);
-      position: absolute;
-      z-index: 2;
-    }
-
-    .switch {
-    position: relative;
-    display: inline-block;
-    width: 100px;
-    height: 25px;
-  }
-  
-  .switch input {display:none;}
-  
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    -webkit-transition: .4s;
-    transition: .4s;
-  }
-  
-  .slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 18px;
-    left: 2px;
-    bottom: 2px;
-    background-color: white;
-    -webkit-transition: .4s;
-    transition: .4s;
-  }
-  
-  input:checked + .slider {
-    background-color: #2196F3;
-  }
-  
-  input:focus + .slider {
-    box-shadow: 0 0 1px #2196F3;
-  }
-  
-  input:checked + .slider:before {
-    -webkit-transform: translateX(75px);
-    -ms-transform: translateX(75px);
-    transform: translateX(75px);
-  }
-
-  .esri-basemap-toggle__image {
-    background-color: #fff;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: 50% 25%;
-}
 
     
   </style>
@@ -124,9 +36,9 @@ html, body, #viewDiv {
 <body class="calcite-maps calcite-nav-top">
   <!-- Navbar -->
 
-  <nav class="navbar calcite-navbar navbar-fixed-top calcite-text-light calcite-bg-dark">
+  <nav class="navbar calcite-navbar navbar-fixed-top calcite-text-light calcite-bg-custom" style="background-color: #0d3b4b">
     <!-- Menu -->
-    <div class="dropdown calcite-dropdown calcite-text-dark calcite-bg-light" role="presentation">
+    <div class="dropdown calcite-dropdown calcite-text-light calcite-bg-custom" role="presentation" style="background-color: #0d3b4b">
       <a class="dropdown-toggle" role="menubutton" aria-haspopup="true" aria-expanded="false" tabindex="0">
         <div class="calcite-dropdown-toggle">
           <span class="sr-only">Toggle dropdown menu</span>
@@ -179,7 +91,7 @@ html, body, #viewDiv {
 
   <!-- Panels -->
 
-  <div class="calcite-panels calcite-panels-right calcite-text-light calcite-bg-dark panel-group">
+  <div class="calcite-panels calcite-panels-right calcite-text-light calcite-bg-custom panel-group" style="background-color: #0d3b4b">
 
     <!-- Panel - Identify Toggle -->
 
