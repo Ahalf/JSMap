@@ -282,9 +282,23 @@ require([
       actions: [customZoomAction]
     };
     soilsTemplate.overwriteActions = true;
+//This one for popup
+    var parcelTemplate = {
+      title: 'Parcels: {objectid}',
+      content:
+        "<p>Parcel ID: {parcel_id}</p>" +
+        "<p>City: {own_city}</p>" +
+        "<p>State: {own_state}</p>" +
+        "<p>Address: {phy_addr1}</p>",
 
-
-
+      actions: [{
+        title: "Visit the Labins Water Boundary Data Website",
+        id: "waterBoundaryData",
+        className: "esri-icon-launch-link-external"
+      }, customZoomAction]
+    };
+    parcelTemplate.overwriteActions = true;
+//This one for identifytask
     var parcelsTemplate = {
       title: 'Parcels: {OBJECTID}',
       content:
@@ -512,6 +526,7 @@ require([
       url: controlPointsURL,
       title: "NGS Control Points",
       visible: false,
+      listMode: "hide",
       popupTemplate: NGSpopupTemplate
 
     });
@@ -590,6 +605,7 @@ require([
       url: swfwmdURL,
       title: "SWFWMD Benchmarks",
       visible: false,
+      listMode: "hide",
       popupTemplate: swfwmdLayerPopupTemplate
 
     });
@@ -623,7 +639,7 @@ require([
         id: 5,
         title: "Parcels",
         visible: false,
-        popupTemplate: parcelsTemplate,
+        popupTemplate: parcelTemplate,
       }, {
         id: 6,
         title: "Lakes, Ponds, and Reservoirs",
@@ -823,6 +839,8 @@ require([
 // Input location from drop down, zoom to it and highlight
     function zoomToFeature(panelurl, location, attribute) {
 
+      var multiPolygonGeometries = [];
+
       var task = new QueryTask({
         url: panelurl
       });
@@ -839,19 +857,24 @@ require([
           for (i=0; i<response.features.length; i++) {
             highlightGraphic = new Graphic(response.features[i].geometry, highlightSymbol);
             graphicArray.push(highlightGraphic);
+            multiPolygonGeometries.push(response.features[i].geometry);
             console.log(highlightGraphic);
           }
           selectionLayer.graphics.addMany(graphicArray);
+          console.log(selectionLayer);
+          console.log(multiPolygonGeometries);
+          var union = geometryEngine.union(multiPolygonGeometries);
+          console.log(union);
+          return union;
         });
     }
-
     function showPopup() {
       console.log("into the showPopup");
       console.log(bufferElements);
       if (bufferElements.length > 0) {
         mapView.popup.open({
-          features: bufferElements
-          //location: bufferElements.geometry,
+          features: bufferElements,
+          location: feature.geometry,
         });
       } else {console.log("showPopup didn't work")};
       dom.byId("mapViewDiv").style.cursor = "auto";
@@ -860,6 +883,7 @@ require([
     }
 
     var bufferElements = [];
+  
 
     function zoomToSectionFeature(panelurl, location, attribute) {
       
@@ -1556,7 +1580,7 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
           }
       }
         bufferElements.push(feature);
-        console.log(bufferElements);
+        console.log(feature.geometry);
         return feature;
       });
     });//.then(showPopup); // Send the array of features to showPopup()

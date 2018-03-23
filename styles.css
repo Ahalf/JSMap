@@ -6,9 +6,6 @@ html, body, #viewDiv {
     width: 100%;
 }
 
-.esri-widget .esri-menu li:hover, .esri-widget .esri-menu li:focus {
-    background-color: #333333;
-}
 
 html,
 body {
@@ -39,8 +36,8 @@ width: 100%;
 }
 
 #overviewDiv {
-  position: relative;
-  top: 850px;
+  position: absolute;
+  top: 750px;
   right: 12px;
   width: 300px;
   height: 200px;
@@ -62,7 +59,8 @@ height: 25px;
 }
 
 #searchWidgetDiv-suggest-menu {
-background-color: #333333;
+background-color: #0d3b4b;
+color: #f6f8f8;
 }
 
 .navbar {
@@ -81,8 +79,31 @@ background-color: #0d3b4b
   color: white;
 }
 
+.esri-search .esri-search__container {
+  background-color: #0d3b4b;
+}
 
+.esri-header {
+  background-color: #0d3b4b;
+}
 
+#searchWidgetDiv-suggest-menu:hover {
+  background-color: #0d3b4b;
+}
+
+.esri-menu:hover .esri-search__suggestions-menu:hover {
+  background-color: #0d3b4b;
+}
+
+.esri-search__source {
+  background-color: #FFFF;
+}
+
+#searchWidgetDiv-source-menu {
+  background-color: #315866;
+}
+
+/*
 ::-webkit-scrollbar {
   width: 12px;
 }
@@ -98,3 +119,4 @@ background-color: #0d3b4b
   background-color:#0d3b4b;
   -webkit-box-shadow: inset 0 0 6px rgba(13,59,75,1); 
 }
+*/
