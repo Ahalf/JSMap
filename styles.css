@@ -39,12 +39,12 @@ width: 100%;
 }
 
 #overviewDiv {
-  position: absolute;
-  top: 685px;
+  position: relative;
+  top: 850px;
   right: 12px;
   width: 300px;
   height: 200px;
-  border: 1px solid black;
+  border: 1.5px solid black;
   z-index: 1;
 }
 
