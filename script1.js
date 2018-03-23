@@ -738,6 +738,8 @@ require([
             mapView.height / overView.height)
         });
       }
+    
+
 
       
       function updateOverviewExtent() {
@@ -755,7 +757,17 @@ require([
         extentDiv.style.width = (topRight.x - bottomLeft.x) + "px";
       }
     });
-
+/*
+    watchUtils.when(overView, "stationary", updatemapView);
+      
+    function updatemapView() {
+      // Animate the MapView to a zoomed-out scale so we get a nice overview.
+      // We use the "progress" callback of the goTo promise to update
+      // the overview extent while animating
+      mapView.goTo({
+        center: overView.center,
+      });
+    }*/
     /////////////////////////////
     /// Dropdown Select Panel ///
     /////////////////////////////
@@ -822,9 +834,14 @@ require([
         .then(function (response) {
           mapView.goTo(response.features);
           selectionLayer.graphics.removeAll();
-          console.log(response);
-          highlightGraphic = new Graphic(response.features[0].geometry, highlightSymbol);
-          selectionLayer.graphics.add(highlightGraphic);
+          console.log(response.features.length);
+          graphicArray = [];
+          for (i=0; i<response.features.length; i++) {
+            highlightGraphic = new Graphic(response.features[i].geometry, highlightSymbol);
+            graphicArray.push(highlightGraphic);
+            console.log(highlightGraphic);
+          }
+          selectionLayer.graphics.addMany(graphicArray);
         });
     }
 
