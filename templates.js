@@ -71,8 +71,8 @@ var customZoomAction = {
 
   //ID, county, quad name, method, station 1, station 2, mean high water, mean low water, approval form download
   var tideInterpPointsTemplate = {
-    title: 'Tide Stations: {id}',
-    content: "<p><b>ID: {id}</b></p>" +
+    title: 'Tide Interpolation Points: {iden}',
+    content: "<p><b>ID: {iden}</b></p>" +
       "<p>County: {cname}</p>" +
       "<p>Quad Name: {tile_name}</p>" +
       "<p>Method: {method}</p>" +

@@ -231,8 +231,8 @@ require([
     });
 
     //var townshipRangeSectionURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer/2";
-    var townshipRangeSectionURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/FREAC/Control_2017_Lines_TEST/MapServer/0";
-
+    //var townshipRangeSectionURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/FREAC/Control_2017_Lines_TEST/MapServer/0";
+    var townshipRangeSectionURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines_EPSG_3857/MapServer/1"
     var townshipRangeSectionLayer = new FeatureLayer({
       url: townshipRangeSectionURL,
       outFields: ["twn_ch", "rng_ch", "sec_ch"],
@@ -391,9 +391,8 @@ require([
 
 // Input location from drop down, zoom to it and highlight
     function zoomToFeature(panelurl, location, attribute) {
-
       var multiPolygonGeometries = [];
-
+      var union = geometryEngine.union(multiPolygonGeometries);
       var task = new QueryTask({
         url: panelurl
       });
@@ -405,21 +404,23 @@ require([
         .then(function (response) {
           mapView.goTo(response.features);
           selectionLayer.graphics.removeAll();
-          console.log(response.features.length);
+          //console.log(response.features.length);
           graphicArray = [];
           for (i=0; i<response.features.length; i++) {
             highlightGraphic = new Graphic(response.features[i].geometry, highlightSymbol);
             graphicArray.push(highlightGraphic);
             multiPolygonGeometries.push(response.features[i].geometry);
-            console.log(highlightGraphic);
+            //console.log(highlightGraphic);
           }
           selectionLayer.graphics.addMany(graphicArray);
           console.log(selectionLayer);
           console.log(multiPolygonGeometries);
-          var union = geometryEngine.union(multiPolygonGeometries);
-          console.log(union);
-          return union;
+          //var union = geometryEngine.union(multiPolygonGeometries);
+          console.log(typeof union);
+          
         });
+        console.log(union);
+        return union;
     }
 
     var bufferElements = [];
@@ -566,6 +567,54 @@ require([
       bufferLayer.addMany(features);
     }
 
+    function executeIdentifyTask(event, names, templates) {
+      console.log(params);
+      dom.byId("mapViewDiv").style.cursor = "wait";
+    
+      // This function returns a promise that resolves to an array of features
+      // A custom popupTemplate is set for each feature based on the layer it
+      // originates from
+      identifyTask.execute(params).then(function (response) {
+    
+        var results = response.results;
+        //console.log(results);
+    
+        return arrayUtils.map(results, function (result) {
+    
+          //console.log("Did the return happen?");
+          //console.log(result.layerName);
+    
+          var feature = result.feature;
+          var layerName = result.layerName;
+    
+          feature.attributes.layerName = layerName;
+    
+          //console.log(layerName);
+          //console.log(result);
+          for (i = 0; i < names.length; i++) {
+            if(layerName === names[i]) {
+                feature.popupTemplate = templates[i];
+            }
+        }
+    
+          //console.log(feature);
+          return feature;
+    
+        });
+      }).then(showPopup); // Send the array of features to showPopup()
+    
+      // Shows the results of the Identify in a popup once the promise is resolved
+      function showPopup(response) {
+        //console.log(response);
+        if (response.length > 0) {
+          mapView.popup.open({
+            features: response,
+            location: event.mapPoint
+          });
+        }
+        dom.byId("mapViewDiv").style.cursor = "auto";
+      }
+    }
 
     /*****************************************
      * 
@@ -575,12 +624,11 @@ require([
 
     // Zoom to City/County/Quad
 
-
     // Build County Drop Down
     buildSelectPanel(controlLinesURL + "4", "ctyname", "Zoom to a County", "selectCountyPanel");
 
     query("#selectCountyPanel").on("change", function (e) {
-      return zoomToFeature(controlLinesURL + "4", e.target.value, "ctyname");
+      return zoomToFeature(controlLinesURL + "4", e.target.value, "ctyname")
     });
 
     //Build Quad Dropdown panel
@@ -794,101 +842,6 @@ require([
       zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
     });
 
-// disable current functionality for doubleclick
-mapView.on("double-click", function(evt) {
-  evt.stopPropagation();
-  console.info(evt);
-});
-
-
-    // executeIdentifyTask() is called each time the view is clicked
-    on(mapView, "double-click", executeIdentifyTask);
-
-    // Create identify task for the specified map service
-    identifyTask = new IdentifyTask(controlLinesURL);
-
-    // Set the parameters for the Identify
-    params = new IdentifyParameters();
-    params.tolerance = 3;
-    params.layerIds = [0, 3, 5, 11];
-    params.layerOption = "all";
-    params.width = mapView.width;
-    params.height = mapView.height;
-    params.returnGeometry = true;
-
-    // Executes each time the view is clicked
-    function executeIdentifyTask(event) {
-      // Set the geometry to the location of the view click
-      params.geometry = event.mapPoint;
-      params.mapExtent = mapView.extent;
-      dom.byId("mapViewDiv").style.cursor = "wait";
-      //console.log("I'm waiting.");
-
-      // This function returns a promise that resolves to an array of features
-      // A custom popupTemplate is set for each feature based on the layer it
-      // originates from
-      identifyTask.execute(params).then(function (response) {
-
-        var results = response.results;
-        //console.log("I'm still waiting");
-        //console.log(results);
-
-        return arrayUtils.map(results, function (result) {
-
-          //console.log("Did the return happen?");
-          //console.log(result.layerName);
-
-          var feature = result.feature;
-          var layerName = result.layerName;
-
-          feature.attributes.layerName = layerName;
-
-          //console.log(layerName);
-          //console.log(result);
-          if (layerName === 'USGS Quads') {
-            feature.popupTemplate = { // autocasts as new PopupTemplate()
-              title: "Quads",
-              content: "<b>tile_name:</b> {tile_name}" +
-                "<br><b>latitude:</b> {latitude}" +
-                "<br><b>longitude:</b> {longitude}" +
-                "<br><b>quad:</b> {quad}"
-            };
-          }
-          else if (layerName === 'City Limits') {
-            feature.popupTemplate = { // autocasts as new PopupTemplate()
-              title: "City name: {name}",
-              content: "<b>county:</b> {county}" +
-                "<br><b>objectid:</b> {objectid}" +
-                "<br><b>tax_count:</b> {tax_count}" +
-                "<br><b>descript:</b> {descript}"
-            };
-          }
-          else if (layerName === 'Parcels') {
-            feature.popupTemplate = parcelsTemplate;
-          }
-          else if (layerName === 'Soils June 2012 - Dept. of Agriculture') {
-            feature.popupTemplate = soilsTemplate;
-          }
-
-          //console.log(feature);
-          return feature;
-
-        });
-      }).then(showPopup); // Send the array of features to showPopup()
-
-      // Shows the results of the Identify in a popup once the promise is resolved
-      function showPopup(response) {
-        //console.log(response);
-        if (response.length > 0) {
-          mapView.popup.open({
-            features: response,
-            location: event.mapPoint
-          });
-        }
-        dom.byId("mapViewDiv").style.cursor = "auto";
-      }
-    }
-
     /////////////////////////
     //// Buffer Identify ////
     /////////////////////////
@@ -993,6 +946,43 @@ mapView.on("double-click", function(evt) {
 
 */
 
+
+
+mapView.on("double-click", function(evt) {
+evt.stopPropagation();
+console.info(evt);
+
+
+  // executeIdentifyTask() is called each time the view is clicked
+  
+  var names = ['City Limits', 'USGS Quads', 'Parcels', 'Soils June 2012 - Dept. of Agriculture'];
+  var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTemplate];
+  // Create identify task for the specified map service
+  identifyTask = new IdentifyTask(controlLinesURL);
+
+  // Set the parameters for the Identify
+  params = new IdentifyParameters();
+  params.tolerance = 3;
+  params.layerIds = [0, 3, 5, 11];
+  params.layerOption = "all";
+  params.width = mapView.width;
+  params.height = mapView.height;
+  params.returnGeometry = true;
+  params.geometry = evt.mapPoint;
+  params.mapExtent = mapView.extent;
+  console.log(evt.mapPoint);
+
+// Executes each time the view is clicked
+  executeIdentifyTask(evt, names, templates);
+
+  
+  
+
+});
+
+
+
+
 function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
 
   //console.log("We've entered the buffer identify function");
@@ -1068,8 +1058,8 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
     }*/
   }
 }
-var names = ['City Limits', 'USGS Quads', 'Parcels', 'Soils June 2012 - Dept. of Agriculture']
-var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTemplate]
+//var names = ['City Limits', 'USGS Quads', 'Parcels', 'Soils June 2012 - Dept. of Agriculture'];
+//var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTemplate];
 
     //////////////////////////////////
     //// Search Widget Text Search ///
@@ -1131,6 +1121,42 @@ var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTempla
         outFields: ["dec_lat", "dec_long", "pid", "county", "data_srce", "datasheet2"],
         name: "NGS Control Points PID",
         placeholder: "Example: 3708",
+      }, {
+        featureLayer: {
+          url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/2",
+          resultGraphicEnabled: true,
+          popupTemplate: CCRTemplate
+        },
+        searchFields: ["blmid", "tile_name"],
+        displayField: "blmid",
+        exactMatch: false,
+        outFields: ["blmid", "tile_name", "image1", "image2", "objectid"],
+        name: "Certified Corners",
+        placeholder: "Example: T07NR10W600700",
+      }, {
+        featureLayer: {
+          url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/5",
+          resultGraphicEnabled: true,
+          popupTemplate: tideStationsTemplate
+        },
+        searchFields: ["id", "countyname", "quadname"],
+        displayField: "id",
+        exactMatch: false,
+        outFields: ["*"],
+        name: "Tide Stations",
+        placeholder: "Search by ID, County Name, or Quad Name",
+      }, {
+        featureLayer: {
+          url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/6",
+          popupTemplate: tideInterpPointsTemplate
+        },
+        searchFields: ["iden", "cname", "tile_name", "station1", "station2"],
+        suggestionTemplate: "ID: {iden}, County: {cname}",
+        displayField: "iden",
+        exactMatch: false,
+        outFields: ["*"],
+        name: "Tide Interpolation Points",
+        placeholder: "Search by ID, County Name, Quad Name, or Station Name",
       }],
     });
 
