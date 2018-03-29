@@ -1079,33 +1079,6 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
               "<p>County: {county}</p>" +
               "<p>PID: {pid}</p>" +
               "<p>Data Source: <a target='_blank' href={data_srce}>here</a></p>" +
-              "<p>Datasheet: <a href={datasheet2}>here</a></p>" +
-              "<p>Quad: {quad}</p>",
-            actions: [{
-              title: "Visit NGS website",
-              id: "ngsWebsite",
-              className: "esri-icon-launch-link-external"
-            }]
-          }
-        },
-        searchFields: ["pid", "datasheet2", "county"],
-        displayField: "pid",
-        exactMatch: false,
-        outFields: ["dec_lat", "dec_long", "pid", "county", "data_srce", "datasheet2", "quad"],
-        filter: {
-          where: "1=1",
-        },
-        name: "NGS Control Points PID",
-        placeholder: "Example: 3708",
-      }, {
-        featureLayer: {
-          url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/0",
-          popupTemplate: {
-            title: 'NGS Control Point: {objectid}',
-            content: "<p><b>(Latitude, Longitude): {dec_lat}, {dec_long}</b></p>" +
-              "<p>County: {county}</p>" +
-              "<p>PID: {pid}</p>" +
-              "<p>Data Source: <a target='_blank' href={data_srce}>here</a></p>" +
               "<p>Datasheet: <a href={datasheet2}>here</a><s/p>" +
               "<p>Quad: {quad}</p>",
             actions: [{
@@ -1169,6 +1142,30 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
         outFields: ["*"],
         name: "County Limits",
         placeholder: "Search by FIPS ID or County Name",
+      }, {
+        featureLayer: {
+          url: controlLinesURL + "0",
+          popupTemplate: quadsTemplate
+        },
+        searchFields: ["tile_name", "quad"],
+        suggestionTemplate: "Quad Name: {tile_name}, Quad Number {quad}",
+        displayField: "tile_name",
+        exactMatch: false,
+        outFields: ["*"],
+        name: "Quads",
+        placeholder: "Search by Quad Name or Quad number",
+      }, {
+        featureLayer: {
+          url: controlLinesURL + "3",
+          popupTemplate: cityLimitsTemplate
+        },
+        searchFields: ["name", "county"],
+        suggestionTemplate: "City Name: {name}, Surrounding County {county}",
+        displayField: "name",
+        exactMatch: false,
+        outFields: ["*"],
+        name: "City Limits",
+        placeholder: "Search by City Name or Surrounding County",
       }],
     });
 
