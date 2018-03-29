@@ -228,11 +228,11 @@ var customZoomAction = {
   };
 
   var countyTemplate = { // autocasts as new PopupTemplate()
-    title: "County name: {name}",
-    content: "<b>county:</b> {county}" +
-      "<br><b>objectid:</b> {objectid}" +
-      "<br><b>tax_count:</b> {tax_count}" +
-      "<br><b>descript:</b> {descript}"
+    title: "County name: {ctyname}",
+    content: "<b>County:</b> {ctyname}" +
+      "<br><b>Objectid:</b> {objectid}" +
+      "<br><b>County FIPS:</b> {fips}" +
+      "<br><b>county Area:</b> {st_area}"
   };
 
   var quadsTemplate = { // autocasts as new PopupTemplate()
