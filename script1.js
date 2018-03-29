@@ -1157,6 +1157,18 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
         outFields: ["*"],
         name: "Tide Interpolation Points",
         placeholder: "Search by ID, County Name, Quad Name, or Station Name",
+      }, {
+        featureLayer: {
+          url: controlLinesURL + "4",
+          popupTemplate: countyTemplate
+        },
+        searchFields: ["fips", "ctyname"],
+        suggestionTemplate: "FIPS Code: {fips}, County Name {ctyname}",
+        displayField: "fips",
+        exactMatch: false,
+        outFields: ["*"],
+        name: "County Limits",
+        placeholder: "Search by FIPS ID or County Name",
       }],
     });
 
