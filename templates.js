@@ -227,6 +227,14 @@ var customZoomAction = {
       "<br><b>descript:</b> {descript}"
   };
 
+  var countyTemplate = { // autocasts as new PopupTemplate()
+    title: "County name: {name}",
+    content: "<b>county:</b> {county}" +
+      "<br><b>objectid:</b> {objectid}" +
+      "<br><b>tax_count:</b> {tax_count}" +
+      "<br><b>descript:</b> {descript}"
+  };
+
   var quadsTemplate = { // autocasts as new PopupTemplate()
     title: "Quads",
     content: "<b>tile_name:</b> {tile_name}" +
