@@ -26,6 +26,7 @@ require([
   "esri/widgets/BasemapToggle",
   "esri/widgets/ScaleBar",
   "esri/widgets/Home",
+  "esri/widgets/Locate",
   "esri/core/watchUtils",
   "dojo/_base/array",
   "dojo/on",
@@ -68,6 +69,7 @@ require([
   BasemapToggle,
   ScaleBar,
   Home,
+  Locate,
   watchUtils, arrayUtils, on, dom, domConstruct, query, Color,
   Collapse,
   Dropdown,
@@ -103,61 +105,58 @@ require([
       url: labinslayerURL,
       title: "LABINS Data",
       sublayers: [{
-        id: 0,
-        title: "NGS Control Points",
+        id: 10,
+        title: "Erosion Control Line",
         visible: true,
-        popupTemplate: NGSpopupTemplate
+        popupTemplate: erosionControlLineTemplate
       }, {
-        id: 1,
-        title: "Preliminary NGS Points",
+        id: 9,
+        title: "R-Monuments",
         visible: true,
-        popupTemplate: NGSPreliminarypopupTemplate
+        popupTemplate: rMonumentsTemplate
       }, {
-        id: 2,
-        title: "Certified Corners",
+        id:8,
+        title: "CCR with Images",
         visible: true,
-        popupTemplate: certifiedCornersTemplate
+        popupTemplate: CCRTemplate
       },  {
-        id: 3,
-        title: "Certified Corner (BLMID) Labels",
-        visible: false
+        id:7,
+        title: "Geographic Names",
+        visible: false,
+        popupTemplate: geonamesTemplate
       },  {
-        id: 4,
-        title: "CCBLMID All Labels",
-        visible: false
+        id: 6,
+        title: "Tide Interpolation Points",
+        visible: true,
+        popupTemplate: tideInterpPointsTemplate
       }, {
         id: 5,
         title: "Tide Stations",
         visible: true,
         popupTemplate: tideStationsTemplate
       }, {
-        id: 6,
-        title: "Tide Interpolation Points",
+        id: 4,
+        title: "CCBLMID All Labels",
+        visible: false
+      }, {
+        id: 3,
+        title: "Certified Corner (BLMID) Labels",
+        visible: false
+      }, {
+        id: 2,
+        title: "Certified Corners",
         visible: true,
-        popupTemplate: tideInterpPointsTemplate
+        popupTemplate: certifiedCornersTemplate
       }, {
-        id:7,
-        title: "Geographic Names",
-        visible: false,
-        popupTemplate: geonamesTemplate
+        id: 1,
+        title: "Preliminary NGS Points",
+        visible: true,
+        popupTemplate: NGSPreliminarypopupTemplate
       }, {
-      id:8,
-      title: "CCR with Images",
-      visible: true,
-      popupTemplate: CCRTemplate
-      }, {
-      id: 9,
-      title: "R-Monuments",
-      visible: true,
-      popupTemplate: rMonumentsTemplate
-    }, {
-      id: 10,
-      title: "Erosion Control Line",
-      visible: true,
-      popupTemplate: erosionControlLineTemplate
-
-
-
+        id: 0,
+        title: "NGS Control Points",
+        visible: true,
+        popupTemplate: NGSpopupTemplate
       }]
     });
 
@@ -177,25 +176,29 @@ require([
     var controlLinesLayer = new MapImageLayer({
       url: controlLinesURL,
       sublayers: [{
-        id: 0,
-        title: "USGS Quads",
+        id: 11,
+        title: "USDA Soils",
+        visible: false,
+        popupTemplate: soilsTemplate
+      }, {
+        id: 10,
+        title: "Hi-Res Imagery Grid: State Plane East",
+        visible: false,
+      },{
+        id: 9,
+        title: "Hi-Res Imagery Grid: State Plane North",
         visible: false,
       }, {
-        id: 1,
-        title: "Township-Range",
+        id: 8,
+        title: "Hi-Res Imagery Grid: State Plane West",
         visible: false,
-      }, /*{
-    id:2,
-    title: "Township-Range-Section",
-    visible: false,
-  }, */{
-        id: 3,
-        title: "City Limits",
-        visible: false,
-        cityLimitsTemplate,
       }, {
-        id: 4,
-        title: "County Boundaries",
+        id: 7,
+        title: "Rivers, Streams, and Canals",
+        visible: false
+      }, {
+        id: 6,
+        title: "Lakes, Ponds, and Reservoirs",
         visible: false,
       }, {
         id: 5,
@@ -203,30 +206,22 @@ require([
         visible: false,
         popupTemplate: parcelTemplate,
       }, {
-        id: 6,
-        title: "Lakes, Ponds, and Reservoirs",
+        id: 4,
+        title: "County Boundaries",
         visible: false,
       }, {
-        id: 7,
-        title: "Rivers, Streams, and Canals",
-        visible: false
+        id: 3,
+        title: "City Limits",
+        visible: false,
+        cityLimitsTemplate,
       }, {
-        id: 8,
-        title: "Hi-Res Imagery Grid: State Plane West",
+        id: 1,
+        title: "Township-Range",
         visible: false,
       }, {
-        id: 9,
-        title: "Hi-Res Imagery Grid: State Plane North",
+        id: 0,
+        title: "USGS Quads",
         visible: false,
-      }, {
-        id: 10,
-        title: "Hi-Res Imagery Grid: State Plane East",
-        visible: false,
-      }, {
-        id: 11,
-        title: "USDA Soils",
-        visible: false,
-        popupTemplate: soilsTemplate
       }]
     });
 
@@ -295,6 +290,12 @@ require([
     overView.ui.components = [];
 
     var extentDiv = dom.byId("extentDiv");
+
+    function clearGraphics() {
+      console.log("cleared graphics");
+      map.graphics.clear();
+      selectionLayer.graphics.removeAll()
+    }
 
 
     overView.when(function () {
@@ -1072,43 +1073,32 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
       allPlaceholder: "Text search for NGS, DEP, and SWFWMD Data",
       sources: [{
         featureLayer: {
-          url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/0",
-          popupTemplate: {
-            title: 'NGS Control Point: {objectid}',
-            content: "<p><b>(Latitude, Longitude): {dec_lat}, {dec_long}</b></p>" +
-              "<p>County: {county}</p>" +
-              "<p>PID: {pid}</p>" +
-              "<p>Data Source: <a target='_blank' href={data_srce}>here</a></p>" +
-              "<p>Datasheet: <a href={datasheet2}>here</a><s/p>" +
-              "<p>Quad: {quad}</p>",
-            actions: [{
-              title: "Visit NGS website",
-              id: "ngsWebsite",
-              className: "esri-icon-launch-link-external"
-            }]
-          }
+          url: controlPointsURL + "0", 
+          popupTemplate: NGSpopupTemplate
         },
         searchFields: ["pid"],
-        displayField: ["pid", "county"],
+        suggestionTemplate: "PID: {pid}, County {county}",
+        displayField: "pid",
         exactMatch: false,
         outFields: ["dec_lat", "dec_long", "pid", "county", "data_srce", "datasheet2"],
         name: "NGS Control Points PID",
-        placeholder: "Example: 3708",
+        placeholder: "Search by PID",
       }, {
         featureLayer: {
-          url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/2",
+          url: controlPointsURL + "2",
           resultGraphicEnabled: true,
           popupTemplate: CCRTemplate
         },
         searchFields: ["blmid", "tile_name"],
         displayField: "blmid",
+        suggestionTemplate: "BLMID: {blmid}, Quad Name: {tile_name}",
         exactMatch: false,
         outFields: ["blmid", "tile_name", "image1", "image2", "objectid"],
         name: "Certified Corners",
-        placeholder: "Example: T07NR10W600700",
+        placeholder: "Search by BLMID or Quad Name",
       }, {
         featureLayer: {
-          url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/5",
+          url: controlPointsURL + "5",
           resultGraphicEnabled: true,
           popupTemplate: tideStationsTemplate
         },
@@ -1120,7 +1110,7 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
         placeholder: "Search by ID, County Name, or Quad Name",
       }, {
         featureLayer: {
-          url: "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer/6",
+          url: controlPointsURL + "6",
           popupTemplate: tideInterpPointsTemplate
         },
         searchFields: ["iden", "cname", "tile_name", "station1", "station2"],
@@ -1160,12 +1150,34 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
           popupTemplate: cityLimitsTemplate
         },
         searchFields: ["name", "county"],
-        suggestionTemplate: "City Name: {name}, Surrounding County {county}",
+        suggestionTemplate: "City Name: {name}, Surrounding County: {county}",
         displayField: "name",
         exactMatch: false,
         outFields: ["*"],
         name: "City Limits",
         placeholder: "Search by City Name or Surrounding County",
+      }, {
+        featureLayer: {
+          url: labinslayerURL + "/9",
+          popupTemplate: rMonumentsTemplate
+        },
+        searchFields: ["monument_name", "county"],
+        suggestionTemplate: "R-Monument Name: {monument_name}, County: {county}",
+        exactMatch: false,
+        outFields: ["*"],
+        name: "R-Monuments",
+        placeholder: "Search by County Name or R-Monument Name",
+      }, {
+        featureLayer: {
+          url: labinslayerURL + "/10",
+          popupTemplate: erosionControlLineTemplate
+        },
+        searchFields: ["ecl_name", "county"],
+        suggestionTemplate: "R-Monument Name: {ecl_name}, County: {county}",
+        exactMatch: false,
+        outFields: ["*"],
+        name: "Erosion Control Lines",
+        placeholder: "Search by County Name or Town Name",
       }],
     });
 
@@ -1180,6 +1192,13 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
 
     //// Clickable Links 
     //NGS link
+
+  // Clear all graphics from map  
+  on(dom.byId("clearButton"), "click", function(evt){
+    selectionLayer.graphics.removeAll(); 
+  });
+
+    console.log(mapView);
     mapView.popup.on("trigger-action", function (event) {
       if (event.action.id === "ngsWebsite") {
         window.open("https://www.ngs.noaa.gov");
@@ -1289,6 +1308,13 @@ function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
     });
     mapView.ui.add(home, "top-left");
 
+    var locateBtn = new Locate({
+      view: mapView
+    });
+    mapView.ui.add(locateBtn, "top-left");
+
+    var clearBtn = document.getElementById("clearButton");
+    mapView.ui.add(clearBtn, "top-left");
 
 
 
