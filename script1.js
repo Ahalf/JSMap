@@ -801,9 +801,10 @@ require([
 
 var identifyElements = [];
 
-mapView.when(function() {
-  tasks = [];
-  allParams = [];
+
+  var tasks = [];
+  var allParams = [];
+  var promises = [];
 
   //Set the tasks array
   tasks.push(new IdentifyTask(labinslayerURL));
@@ -834,9 +835,10 @@ console.log(tasks);
 
   // executeIdentifyTask() is called each time the view is clicked
   on(mapView, "click", executeIdentifyTask);
-});
+
 
 function executeIdentifyTask(event) {
+  dom.byId("viewDiv").style.cursor = "wait";
   console.log("into executeidentify");
   promises = [];
   // Set the geometry to the location of the view click
