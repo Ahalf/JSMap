@@ -374,7 +374,7 @@ require([
           var values = features.map(function (feature) {
             return feature.attributes[attribute];
           });
-          console.log(response);
+          //console.log(response);
           return values;
 
         })
@@ -457,12 +457,6 @@ require([
         .then(createBuffer)
         //.then(queryFeaturesInBuffer)
 
-        //This should append all features of both 
-        //buffers to popup function that happes after
-
-        //What I can see is an entire array with nexted arrays
-        // gets put into bufferElements before the second function
-        // runs then .push() behaves properly
         .then(function (response) {
         bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response)
         //.then(console.log(bufferElements.length))
@@ -566,55 +560,6 @@ require([
       var numQuakes = features.length;
       dom.byId("results").innerHTML = numQuakes + " earthquakes found";
       bufferLayer.addMany(features);
-    }
-
-    function executeIdentifyTask(event, names, templates) {
-      console.log(params);
-      dom.byId("mapViewDiv").style.cursor = "wait";
-    
-      // This function returns a promise that resolves to an array of features
-      // A custom popupTemplate is set for each feature based on the layer it
-      // originates from
-      identifyTask.execute(params).then(function (response) {
-    
-        var results = response.results;
-        //console.log(results);
-    
-        return arrayUtils.map(results, function (result) {
-    
-          //console.log("Did the return happen?");
-          //console.log(result.layerName);
-    
-          var feature = result.feature;
-          var layerName = result.layerName;
-    
-          feature.attributes.layerName = layerName;
-    
-          //console.log(layerName);
-          //console.log(result);
-          for (i = 0; i < names.length; i++) {
-            if(layerName === names[i]) {
-                feature.popupTemplate = templates[i];
-            }
-        }
-    
-          //console.log(feature);
-          return feature;
-    
-        });
-      }).then(showPopup); // Send the array of features to showPopup()
-    
-      // Shows the results of the Identify in a popup once the promise is resolved
-      function showPopup(response) {
-        //console.log(response);
-        if (response.length > 0) {
-          mapView.popup.open({
-            features: response,
-            location: event.mapPoint
-          });
-        }
-        dom.byId("mapViewDiv").style.cursor = "auto";
-      }
     }
 
     /*****************************************
@@ -846,219 +791,125 @@ require([
     /////////////////////////
     //// Buffer Identify ////
     /////////////////////////
-/*
-    function bufferIdentify(buffer) {
 
-      console.log("We've entered the buffer identify function");
-
-      console.log(buffer);
-
-      // Create identify task for the specified map service
-      identifyTask = new IdentifyTask(controlLinesURL);
-
-      // Set the parameters for the Identify
-      params = new IdentifyParameters();
-      params.tolerance = 10;
-      params.layerIds = [0, 3, 11];
-      params.layerOption = "all";
-      params.width = mapView.width;
-      params.height = mapView.height;
-      params.returnGeometry = true;
-
-      executeIdentifyTask();
-
-      // Executes each time the view is clicked
-      function executeIdentifyTask() {
-        console.log("we've entered executeIdentifyTask function");
-        console.log(buffer);
-        // Set the geometry to the location of the view click
-        params.geometry = buffer;
-        params.mapExtent = mapView.extent;
-        dom.byId("mapViewDiv").style.cursor = "wait";
-        //console.log(buffer);
-
-        // This function returns a promise that resolves to an array of features
-        // A custom popupTemplate is set for each feature based on the layer it
-        // originates from
-        identifyTask.execute(params).then(function (response) {
-
-          var results = response.results;
-          //console.log("I'm still waiting");
-          //console.log(results);
-
-          return arrayUtils.map(results, function (result) {
-
-            //console.log("Did the return happen?");
-            //console.log(result.layerName);
-
-            var feature = result.feature;
-            var layerName = result.layerName;
-
-            feature.attributes.layerName = layerName;
-
-            //console.log(layerName);
-            //console.log(result);
-            if (layerName === 'USGS Quads') {
-              feature.popupTemplate = { // autocasts as new PopupTemplate()
-                title: "Quads",
-                content: "<b>tile_name:</b> {tile_name}" +
-                  "<br><b>latitude:</b> {latitude}" +
-                  "<br><b>longitude:</b> {longitude}" +
-                  "<br><b>quad:</b> {quad}"
-              };
-            }
-            else if (layerName === 'City Limits') {
-              feature.popupTemplate = { // autocasts as new PopupTemplate()
-                title: "City name: {name}",
-                content: "<b>county:</b> {county}" +
-                  "<br><b>objectid:</b> {objectid}" +
-                  "<br><b>tax_count:</b> {tax_count}" +
-                  "<br><b>descript:</b> {descript}"
-              };
-            }
-            else if (layerName === 'Parcels') {
-              feature.popupTemplate = parcelsTemplate;
-            }
-            else if (layerName === 'Soils June 2012 - Dept. of Agriculture') {
-              feature.popupTemplate = soilsTemplate;
-            }
-
-            //console.log(feature);
-            //console.log("logged a feature");
-            return feature;
-
-          });
-        }).then(showPopup); // Send the array of features to showPopup()
-
-        // Shows the results of the Identify in a popup once the promise is resolved
-        function showPopup(response) {
-          console.log(typeof response);
-          console.log(response);
-          if (response.length > 0) {
-            mapView.popup.open({
-              features: response,
-              location: buffer.centroid
-            });
-          }
-          dom.byId("mapViewDiv").style.cursor = "auto";
-        }
-      }
-    }
-
+/*mapView.on("right-click", function(evt) {
+  //evt.stopPropagation();
+  console.info(evt);
+  
+  });
 */
 
+var identifyElements = [];
 
+mapView.when(function() {
+  tasks = [];
+  allParams = [];
 
-mapView.on("double-click", function(evt) {
-evt.stopPropagation();
-console.info(evt);
-
-
-  // executeIdentifyTask() is called each time the view is clicked
-  
-  var names = ['City Limits', 'USGS Quads', 'Parcels', 'Soils June 2012 - Dept. of Agriculture'];
-  var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTemplate];
-  // Create identify task for the specified map service
-  identifyTask = new IdentifyTask(controlLinesURL);
+  //Set the tasks array
+  tasks.push(new IdentifyTask(labinslayerURL));
+  tasks.push(new IdentifyTask(controlLinesURL));
 
   // Set the parameters for the Identify
   params = new IdentifyParameters();
   params.tolerance = 3;
-  params.layerIds = [0, 3, 5, 11];
+  params.layerIds = [0, 1, 2, 5, 8, 9, 10];
   params.layerOption = "all";
-  params.width = mapView.width;
-  params.height = mapView.height;
+  params.width = view.width;
+  params.height = view.height;
   params.returnGeometry = true;
-  params.geometry = evt.mapPoint;
-  params.mapExtent = mapView.extent;
-  console.log(evt.mapPoint);
-
-// Executes each time the view is clicked
-  executeIdentifyTask(evt, names, templates);
-
-  
-  
-
-});
-
-
-
-
-function bufferIdentify(url, layerArray, layerNames, popupTemplates, geometry) {
-
-  //console.log("We've entered the buffer identify function");
-
-  //console.log(geometry);
-
-  // Create identify task for the specified map service
-  identifyTask = new IdentifyTask(url);
+  allParams.push(params);
 
   // Set the parameters for the Identify
   params = new IdentifyParameters();
-  params.tolerance = 10;
-  params.layerIds = layerArray;
+  params.tolerance = 5;
+  params.layerIds = [0, 3, 4, 5, 11];
   params.layerOption = "all";
-  params.width = mapView.width;
-  params.height = mapView.height;
+  params.width = view.width;
+  params.height = view.height;
   params.returnGeometry = true;
+  allParams.push(params);
 
-  executeIdentifyTask();
+console.log(tasks);
 
-  // Executes each time the view is clicked
-  function executeIdentifyTask() {
-    console.log("we've entered executeIdentifyTask function");
-    //console.log(geometry);
-    // Set the geometry to the location of the view click
-    params.geometry = geometry;
-    params.mapExtent = mapView.extent;
-    dom.byId("mapViewDiv").style.cursor = "wait";
-    //console.log(buffer);
 
-    // This function returns a promise that resolves to an array of features
-    // A custom popupTemplate is set for each feature based on the layer it
-    // originates from
-    identifyTask.execute(params).then(function (response) {
+  // executeIdentifyTask() is called each time the view is clicked
+  on(mapView, "click", executeIdentifyTask);
+});
 
+function executeIdentifyTask(event) {
+  console.log("into executeidentify");
+  promises = [];
+  // Set the geometry to the location of the view click
+  allParams[0].geometry = allParams[1].geometry = event.mapPoint;
+  allParams[0].mapExtent = allParams[1].mapExtent = view.extent;
+  for (i = 0; i < tasks.length; i++) {
+    promises.push(tasks[i].execute(allParams[i]));
+  }
+  var iPromises = new all(promises);
+
+  iPromises.then(function (rArray) {
+    arrayUtils.map(rArray, function(response){
       var results = response.results;
-      console.log("we've executed the identifyTask");
-      //console.log(results);
-
-      return arrayUtils.map(results, function (result) {
-
-        //console.log("Did the return happen?");
-        //console.log(result.layerName);
-
+      return arrayUtils.map(results, function(result) {
         var feature = result.feature;
         var layerName = result.layerName;
 
         feature.attributes.layerName = layerName;
+        if (layerName === 'NGS Control Points') {
+          feature.popupTemplate = NGSpopupTemplate;
 
-        for (i = 0; i < names.length; i++) {
-          if(layerName === names[i]) {
-              feature.popupTemplate = templates[i];
-          }
-      }
-        bufferElements.push(feature);
-        console.log(feature.geometry);
-        return feature;
+        } else if (layerName === 'Preliminary NGS Points') {
+          feature.popupTemplate = NGSPreliminarypopupTemplate;
+
+        } else if (layerName === 'Certified Corners') {
+          feature.popupTemplate = tideStationsTemplate;
+
+        } else if (layerName === 'CCR with Images') {
+          feature.popupTemplate = CCRTemplate;
+
+        } else if (layerName === 'R-Monuments') {
+          feature.popupTemplate = rMonumentsTemplate;
+
+        } else if (layerName === 'Erosion Control line') {
+          feature.popupTemplate = erosionControlLineTemplate;
+
+        } else if (layerName === 'USGS Quads') {
+          feature.popupTemplate = quadsTemplate;
+
+        } else if (layerName === 'City Limits') {
+          feature.popupTemplate = cityLimitsTemplate;
+
+        } else if (layerName === 'Parcels') {
+          feature.popupTemplate = parcelsTemplate;
+
+        } else if (layerName === 'Soils June 2012 - Dept. of Agriculture ') {
+          feature.popupTemplate = soilsTemplate;
+        }
+
+        //console.log(identifyElements);
+        identifyElements.push(feature);
       });
-    }).then(showPopup); // Send the array of features to showPopup()
-    // Shows the results of the Identify in a popup once the promise is resolved
-    
-    /*function showPopup(response) {
-      
-      console.log(response);
-      console.log(bufferElements);
-      if (bufferElements.length > 0) {
-        mapView.popup.open({
-          features: bufferElements,
-          location: buffer.geometry
-        });
-      }
-      dom.byId("mapViewDiv").style.cursor = "auto";
-    }*/
+    })
+    showPopup(identifyElements);
+  });
+
+  // Shows the results of the Identify in a popup once the promise is resolved
+  function showPopup(response) {
+    console.log(response);
+    if (response.length > 0) {
+      view.popup.open({
+        features: response,
+        location: event.mapPoint
+      });
+    }
+    dom.byId("viewDiv").style.cursor = "auto";
   }
 }
+
+
+
+
+
 //var names = ['City Limits', 'USGS Quads', 'Parcels', 'Soils June 2012 - Dept. of Agriculture'];
 //var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTemplate];
 
