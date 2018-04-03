@@ -176,10 +176,10 @@ var customZoomAction = {
    *******************************************************/
 
   var swfwmdLayerPopupTemplate = {
-    title: 'SWFWMD Survey Benchmarks:',
+    title: 'SWFWMD Survey Benchmarks',
     content: "<p><b>Benchmark Name: {BENCHMARK_NAME}</b></p>" +
-      "<p>More Information: {DOWNLOADME}</p>",
-
+      "<p>More Information: <a target='_blank' href=http://ftp.labins.org/swfwmd/SWFWMD_control_2013/{FILE_NAME}>here</a></a></p>",
+      
     actions: [{
       title: "Visit the Labins Water Boundary Data Website",
       id: "waterBoundaryData",

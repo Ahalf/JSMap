@@ -457,13 +457,7 @@ require([
         })
         .then(createBuffer)
         //.then(queryFeaturesInBuffer)
-
-        .then(function (response) {
-        bufferIdentify(controlLinesURL, [0, 3, 5, 11], names, templates, response)
-        //.then(console.log(bufferElements.length))
-        bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response)
-        //.then(console.log(bufferElements.length));
-      })
+      
       .then(showPopup);
     }
 
@@ -801,6 +795,8 @@ require([
 
     tasks.push(new IdentifyTask(controlLinesURL));
     tasks.push(new IdentifyTask(labinslayerURL));
+    tasks.push(new IdentifyTask(swfwmdURL));
+
     // Set the parameters for the Identify
     params = new IdentifyParameters();
     params.tolerance = 3;
@@ -819,6 +815,16 @@ require([
     params.height = mapView.height;
     params.returnGeometry = true;
     allParams.push(params);
+    // Set the parameters for the Identify
+    params = new IdentifyParameters();
+    params.tolerance = 3;
+    params.layerIds = [0];
+    params.layerOption = "all";
+    params.width = mapView.width;
+    params.height = mapView.height;
+    params.returnGeometry = true;
+    allParams.push(params);
+
 
     var identifyElements = [];
 
@@ -833,8 +839,8 @@ function executeIdentifyTask(event) {
   event.stopPropagation()
   promises = [];
   // Set the geometry to the location of the view click
-  allParams[0].geometry = allParams[1].geometry = event.mapPoint;
-  allParams[0].mapExtent = allParams[1].mapExtent = mapView.extent;
+  allParams[0].geometry = allParams[1].geometry = allParams[2].geometry = event.mapPoint;
+  allParams[0].mapExtent = allParams[1].mapExtent = allParams[2].mapExtent = mapView.extent;
   for (i = 0; i < tasks.length; i++) {
     promises.push(tasks[i].execute(allParams[i]));
   }
@@ -870,6 +876,8 @@ function executeIdentifyTask(event) {
           feature.popupTemplate = rMonumentsTemplate;
         } else if (layerName === 'Erosion Control Line') {
           feature.popupTemplate = erosionControlLineTemplate;
+        } else if (layerName === 'Survey Benchmarks') {
+          feature.popupTemplate = swfwmdLayerPopupTemplate;
         }
         //console.log(identifyElements);
         identifyElements.push(feature);
@@ -906,6 +914,19 @@ function executeIdentifyTask(event) {
       view: mapView,
       allPlaceholder: "Text search for NGS, DEP, and SWFWMD Data",
       sources: [{
+        locator: new Locator({ url: "//geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer" }),
+        singleLineFieldName: "SingleLine",
+        name: "Geocoder",
+        localSearchOptions: {
+          minScale: 300000,
+          distance: 50000
+        },
+        placeholder: "Search Geocoder",
+        maxResults: 3,
+        maxSuggestions: 6,
+        suggestionsEnabled: false,
+        minSuggestCharacters: 0
+      }, {
         featureLayer: {
           url: controlPointsURL + "0", 
           popupTemplate: NGSpopupTemplate
