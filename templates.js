@@ -19,14 +19,42 @@ var customZoomAction = {
     }]
   };
 
+  var NGSIdentifyPopupTemplate = {
+    title: 'NGS Control Points: {OBJECTID}',
+    content: "<p>(Latitude, Longitude): {DEC_LAT}, {DEC_LONG}</p>" +
+      "<p>County: {COUNTY}</p>" +
+      "<p>PID: {PID}</p>" +
+      "<p>Data Source: <a target='_blank' href={DATA_SRCE}>here</a></p>" +
+      "<p>Datasheet: <a href={DATASHEET2}>here</a></p>",
+    actions: [{
+      title: "Visit NGS website",
+      id: "ngsWebsite",
+      className: "esri-icon-launch-link-external"
+    }]
+  };
+
+  var NGSPreliminaryIdentifypopupTemplate = {
+    title: 'Preliminary NGS Control Point',
+    content: "<p><b>Designation: {designatio}</b></p>" +
+      "<p><b>L-Number: {lnumber}</b></p>" +
+      "<p><b>County: {county_}</b></p>" +
+      "<p>Datasheet: <a target='_blank' href={pid}>here</a></p>" +
+      "<p>Abstract file: <a target='_blank' href={abstract}>here</a></p>" +
+      "<p>prn.doc file: <a target='_blank' href={description2}>here</a></p>",
+      actions: [{
+      title: "Visit the National Geodetic Survey website",
+      id: "ngsWebsite",
+      className: "esri-icon-launch-link-external"
+    }]
+  };
 
   var NGSPreliminarypopupTemplate = {
     title: 'Preliminary NGS Control Point: {FeatureID}',
     content: "<p><b>Designation: {base_and_survey.sde.Prelim_NGS_12_21_2011b.designatio}</b></p>" +
       "<p><b>Latitude: {base_and_survey.sde.Prelim_NGS_12_21_2011b.latdecdeg}</b></p>" +
       "<p><b>Longitude: {base_and_survey.sde.Prelim_NGS_12_21_2011b.londecdeg}</b></p>" +
-      "<p>Abstract: <a href={base_and_survey.sde.PUBLISHED_PRELIMINARY.abstract}>here</a></p>" +
-      "<p>Description file: <a href={base_and_survey.sde.PUBLISHED_PRELIMINARY.description2}>here</a></p>",
+      "<p>Abstract: <a target='_blank' href={base_and_survey.sde.PUBLISHED_PRELIMINARY.abstract}>here</a></p>" +
+      "<p>Description file: <a target='_blank' href={base_and_survey.sde.PUBLISHED_PRELIMINARY.description2}>here</a></p>",
     actions: [{
       title: "Visit the National Geodetic Survey website",
       id: "ngsWebsite",
@@ -40,8 +68,8 @@ var customZoomAction = {
   var certifiedCornersTemplate = {
     title: 'Certified Corners: {FeatureID}',
     content: "<p><b>BLMID: {blmid}</b></p>" +
-      "<p><b>image1: <a href={image1}>here</a></b></p>" +
-      "<p><b>image2: <a href={image2}>here</a></b></p>" +
+      "<p><b>image1: <a target='_blank' href={image1}>here</a></b></p>" +
+      "<p><b>image2: <a target='_blank' href={image2}>here</a></b></p>" +
       "<p>Quad Name: {tile_name}</p>" +
       "<p>Quad Number: {quad_num}</p>",
     actions: [{
@@ -203,7 +231,7 @@ var customZoomAction = {
   };
   parcelTemplate.overwriteActions = true;
 //This one for identifytask
-  var parcelsTemplate = {
+  var parcelsIdentifyTemplate = {
     title: 'Parcels: {OBJECTID}',
     content:
       "<p>Parcel ID: {PARCEL_ID}</p>" +
@@ -217,7 +245,7 @@ var customZoomAction = {
       className: "esri-icon-launch-link-external"
     }, customZoomAction]
   };
-  parcelsTemplate.overwriteActions = true;
+  parcelsIdentifyTemplate.overwriteActions = true;
 
   var cityLimitsTemplate = { // autocasts as new PopupTemplate()
     title: "City name: {name}",
@@ -236,6 +264,14 @@ var customZoomAction = {
   };
 
   var quadsTemplate = { // autocasts as new PopupTemplate()
+    title: "Quads",
+    content: "<b>tile_name:</b> {tile_name}" +
+      "<br><b>latitude:</b> {latitude}" +
+      "<br><b>longitude:</b> {longitude}" +
+      "<br><b>quad:</b> {quad}"
+  };
+
+  var quadsIdentifyTemplate = { // autocasts as new PopupTemplate()
     title: "Quads",
     content: "<b>tile_name:</b> {tile_name}" +
       "<br><b>latitude:</b> {latitude}" +
