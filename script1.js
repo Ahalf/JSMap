@@ -822,7 +822,12 @@ require([
 
     var identifyElements = [];
 
-mapView.on("double-click", executeIdentifyTask)
+mapView.on("double-click", function(event) {
+    if (mapView.scale < 100000) {
+      executeIdentifyTask(event);
+    }  
+});
+
 
 function executeIdentifyTask(event) {
   event.stopPropagation()
