@@ -855,6 +855,16 @@ function executeIdentifyTask(event) {
           feature.popupTemplate = soilsTemplate;
         } else if (layerName === 'Preliminary NGS Points') {
           feature.popupTemplate = NGSPreliminaryIdentifypopupTemplate;
+        } else if (layerName === 'Certified Corners') {
+          feature.popupTemplate = CCRTemplate;
+        } else if (layerName === 'Tide Stations') {
+          feature.popupTemplate = tideStationsTemplate;
+        } else if (layerName === 'Tide Interpolation Points') {
+          feature.popupTemplate = tideInterpPointsTemplate;
+        } else if (layerName === 'R-Monuments') {
+          feature.popupTemplate = rMonumentsTemplate;
+        } else if (layerName === 'Erosion Control Line') {
+          feature.popupTemplate = erosionControlLineTemplate;
         }
         //console.log(identifyElements);
         identifyElements.push(feature);

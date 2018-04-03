@@ -118,7 +118,7 @@ var customZoomAction = {
   };
 
   var rMonumentsTemplate = {
-    title: 'Regional Coastal Monitoring Data:',
+    title: 'Regional Coastal Monitoring Data',
     content: "<p><b>Feature ID: {unique_id}</b></p>" +
       "<p>Monument Name: {monument_name}</p>" +
       "<p>State Plane Zone: {state_plane_zone}</p>" +
@@ -133,7 +133,7 @@ var customZoomAction = {
   };
 
   var erosionControlLineTemplate = {
-    title: 'Range Monument:',
+    title: 'Range Monument',
     content: "<p><b>Feature ID: {objectid}</b></p>" +
       "<p>County: {county}</p>" +
       "<p>ECL Name: {ecl_name}</p>" +
