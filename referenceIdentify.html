@@ -61,14 +61,15 @@
         }]
       };
       // URL to the map service where the identify will be performed
-      var soilURL =
-        "https://services.arcgisonline.com/arcgis/rest/services/Specialty/Soil_Survey_Map/MapServer";
+      var controlLinesURL =
+        "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/Control_Lines/MapServer";
       // Add the map service as a TileLayer for fast rendering
       // Tile layers are composed of non-interactive images. For that reason we'll
       // use IdentifyTask to query the service to add interactivity to the app
-      var parcelsLyr = new TileLayer({
-        url: soilURL,
-        opacity: 0.85
+      var controlLinesLayer = new FeatureLayer({
+        url: controlLinesURL,
+        title: 'USGS Quads',
+        visible: true
       });
       var controlPointsURL = "https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer"
       var controlPointsLayer = new FeatureLayer({
@@ -81,7 +82,7 @@
       var map = new Map({
         basemap: "osm"
       });
-      //map.add(parcelsLyr);
+      map.add(controlLinesLayer);
       map.add(controlPointsLayer);
       var view = new MapView({
         map: map,
@@ -94,12 +95,12 @@
         tasks = [];
         allParams = [];
         //Set the tasks array
-        tasks.push(new IdentifyTask(soilURL));
+        tasks.push(new IdentifyTask(controlLinesURL));
         tasks.push(new IdentifyTask(controlPointsURL));
         // Set the parameters for the Identify
         params = new IdentifyParameters();
-        params.tolerance = 3;
-        params.layerIds = [0, 1, 2];
+        params.tolerance = 8;
+        params.layerIds = [0];
         params.layerOption = "all";
         params.width = view.width;
         params.height = view.height;
@@ -107,7 +108,7 @@
         allParams.push(params);
         // Set the parameters for the Identify
         params = new IdentifyParameters();
-        params.tolerance = 5;
+        params.tolerance = 8;
         params.layerIds = [0];
         params.layerOption = "all";
         params.width = view.width;
@@ -134,25 +135,10 @@
               var feature = result.feature;
               var layerName = result.layerName;
               feature.attributes.layerName = layerName;
-              if (layerName === 'Soil Survey Geographic') {
+              if (layerName === 'USGS Quads') {
                 feature.popupTemplate = { // autocasts as new PopupTemplate()
-                  title: "{Map Unit Name}",
-                  content: "<b>Dominant order:</b> {Dominant Order} ({Dom. Cond. Order %}%)" +
-                    "<br><b>Dominant sub-order:</b> {Dominant Sub-Order} ({Dom. Cond. Suborder %}%)" +
-                    "<br><b>Dominant Drainage Class:</b> {Dom. Cond. Drainage Class} ({Dom. Cond. Drainage Class %}%)" +
-                    "<br><b>Farmland Class:</b> {Farmland Class}"
-                };
-              } else if (layerName === 'State Soil Geographic') {
-                feature.popupTemplate = { // autocasts as new PopupTemplate()
-                  title: "{Map Unit Name}",
-                  content: "<b>Dominant order:</b> {Dominant Order} ({Dominant %}%)" +
-                    "<br><b>Dominant sub-order:</b> {Dominant Sub-Order} ({Dominant Sub-Order %}%)"
-                };
-              } else if (layerName === 'Global Soil Regions') {
-                feature.popupTemplate = { // autocasts as new PopupTemplate()
-                  title: layerName,
-                  content: "<b>Dominant order:</b> {Dominant Order}" +
-                    "<br><b>Dominant sub-order:</b> {Dominant Sub-Order}"
+                  title: "USGS QUADS",
+                  content: "ObjectID: {OBJECTID}"
                 };
               } else if (layerName === 'NGS Control Points') {
                   feature.popupTemplate = NGSpopupTemplate;
