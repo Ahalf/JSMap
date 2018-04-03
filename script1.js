@@ -31,6 +31,7 @@ require([
   "dojo/_base/array",
   "dojo/on",
   "dojo/dom",
+  "dojo/promise/all",
   "dojo/dom-construct",
   "dojo/query",
   "dojo/_base/Color",
@@ -70,7 +71,7 @@ require([
   ScaleBar,
   Home,
   Locate,
-  watchUtils, arrayUtils, on, dom, domConstruct, query, Color,
+  watchUtils, arrayUtils, on, dom, all, domConstruct, query, Color,
   Collapse,
   Dropdown,
   CalciteMaps,
@@ -791,129 +792,94 @@ require([
     /////////////////////////
     //// Buffer Identify ////
     /////////////////////////
+    var promises, tasks;
+    var identifyTask, params;
 
-/*mapView.on("right-click", function(evt) {
-  //evt.stopPropagation();
-  console.info(evt);
-  
-  });
-*/
-
-var identifyElements = [];
+    tasks = [];
+    allParams = [];
 
 
-  var tasks = [];
-  var allParams = [];
-  var promises = [];
+    tasks.push(new IdentifyTask(controlLinesURL));
+    tasks.push(new IdentifyTask(labinslayerURL));
+    // Set the parameters for the Identify
+    params = new IdentifyParameters();
+    params.tolerance = 3;
+    params.layerIds = [0, 3, 4, 5, 11];
+    params.layerOption = "all";
+    params.width = mapView.width;
+    params.height = mapView.height;
+    params.returnGeometry = true;
+    allParams.push(params);
+    // Set the parameters for the Identify
+    params = new IdentifyParameters();
+    params.tolerance = 3;
+    params.layerIds = [0, 1, 2, 5, 6, 9, 10];
+    params.layerOption = "all";
+    params.width = mapView.width;
+    params.height = mapView.height;
+    params.returnGeometry = true;
+    allParams.push(params);
 
-  //Set the tasks array
-  tasks.push(new IdentifyTask(labinslayerURL));
-  tasks.push(new IdentifyTask(controlLinesURL));
+    var identifyElements = [];
 
-  // Set the parameters for the Identify
-  params = new IdentifyParameters();
-  params.tolerance = 3;
-  params.layerIds = [0, 1, 2, 5, 8, 9, 10];
-  params.layerOption = "all";
-  params.width = view.width;
-  params.height = view.height;
-  params.returnGeometry = true;
-  allParams.push(params);
-
-  // Set the parameters for the Identify
-  params = new IdentifyParameters();
-  params.tolerance = 5;
-  params.layerIds = [0, 3, 4, 5, 11];
-  params.layerOption = "all";
-  params.width = view.width;
-  params.height = view.height;
-  params.returnGeometry = true;
-  allParams.push(params);
-
-console.log(tasks);
-
-
-  // executeIdentifyTask() is called each time the view is clicked
-  on(mapView, "click", executeIdentifyTask);
-
+mapView.on("double-click", executeIdentifyTask)
 
 function executeIdentifyTask(event) {
-  dom.byId("viewDiv").style.cursor = "wait";
-  console.log("into executeidentify");
+  event.stopPropagation()
   promises = [];
   // Set the geometry to the location of the view click
   allParams[0].geometry = allParams[1].geometry = event.mapPoint;
-  allParams[0].mapExtent = allParams[1].mapExtent = view.extent;
+  allParams[0].mapExtent = allParams[1].mapExtent = mapView.extent;
   for (i = 0; i < tasks.length; i++) {
     promises.push(tasks[i].execute(allParams[i]));
   }
   var iPromises = new all(promises);
-
   iPromises.then(function (rArray) {
     arrayUtils.map(rArray, function(response){
       var results = response.results;
       return arrayUtils.map(results, function(result) {
         var feature = result.feature;
         var layerName = result.layerName;
-
         feature.attributes.layerName = layerName;
-        if (layerName === 'NGS Control Points') {
-          feature.popupTemplate = NGSpopupTemplate;
-
-        } else if (layerName === 'Preliminary NGS Points') {
-          feature.popupTemplate = NGSPreliminarypopupTemplate;
-
-        } else if (layerName === 'Certified Corners') {
-          feature.popupTemplate = tideStationsTemplate;
-
-        } else if (layerName === 'CCR with Images') {
-          feature.popupTemplate = CCRTemplate;
-
-        } else if (layerName === 'R-Monuments') {
-          feature.popupTemplate = rMonumentsTemplate;
-
-        } else if (layerName === 'Erosion Control line') {
-          feature.popupTemplate = erosionControlLineTemplate;
-
-        } else if (layerName === 'USGS Quads') {
-          feature.popupTemplate = quadsTemplate;
-
+        if (layerName === 'USGS Quads') {
+          feature.popupTemplate = quadsIdentifyTemplate;
+        } else if (layerName === 'NGS Control Points') {
+            feature.popupTemplate = NGSIdentifyPopupTemplate;
         } else if (layerName === 'City Limits') {
           feature.popupTemplate = cityLimitsTemplate;
-
+        } else if (layerName === 'County Boundaries') {
+          feature.popupTemplate = countyTemplate;
         } else if (layerName === 'Parcels') {
-          feature.popupTemplate = parcelsTemplate;
-
-        } else if (layerName === 'Soils June 2012 - Dept. of Agriculture ') {
+          feature.popupTemplate = parcelsIdentifyTemplate;
+        } else if (layerName === 'Soils June 2012 - Dept. of Agriculture') {
           feature.popupTemplate = soilsTemplate;
+        } else if (layerName === 'Preliminary NGS Points') {
+          feature.popupTemplate = NGSPreliminaryIdentifypopupTemplate;
         }
-
         //console.log(identifyElements);
         identifyElements.push(feature);
       });
     })
     showPopup(identifyElements);
   });
-
   // Shows the results of the Identify in a popup once the promise is resolved
   function showPopup(response) {
     console.log(response);
     if (response.length > 0) {
-      view.popup.open({
+      mapView.popup.open({
         features: response,
         location: event.mapPoint
       });
+    identifyElements = [];
     }
     dom.byId("viewDiv").style.cursor = "auto";
+    identifyElements = [];
   }
 }
 
 
 
 
-
-//var names = ['City Limits', 'USGS Quads', 'Parcels', 'Soils June 2012 - Dept. of Agriculture'];
-//var templates = [cityLimitsTemplate, quadsTemplate, parcelsTemplate, soilsTemplate];
 
     //////////////////////////////////
     //// Search Widget Text Search ///
