@@ -35,9 +35,10 @@ width: 100%;
   left: 500;
 }
 
+
 #overviewDiv {
   position: absolute;
-  top: 750px;
+  bottom: 20px;
   right: 12px;
   width: 300px;
   height: 200px;
@@ -50,6 +51,17 @@ width: 100%;
   position: absolute;
   z-index: 2;
 }
+
+
+@media only screen and (max-width: 1026px) { 
+  #overviewDiv { 
+    display: none; 
+  } 
+  #extentDiv {
+    display: none;
+  }
+}
+
 
 .switch {
 position: relative;
