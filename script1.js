@@ -461,6 +461,45 @@ require([
       .then(showPopup);
     }
 
+    function zoomToTRFeature(panelurl, location, attribute) {
+      multiPolygonGeometries = [];
+      var union = geometryEngine.union(multiPolygonGeometries);
+      // Clear existing bufferElement items each time the zoom to feature runs
+      //bufferElements.length = 0;
+
+      var township = document.getElementById("selectNGSCountyPanel");
+      var strUser = township.options[township.selectedIndex].text;
+
+      var range = document.getElementById("selectNGSCityPanel");
+      var rangeUser = range.options[range.selectedIndex].text;
+
+
+      var task = new QueryTask({
+        url: panelurl
+      });
+      var params = new Query({
+        where: "twn_ch = '" + strUser.substr(0, 2) + "' AND tdir = '" + strUser.substr(2) + "' AND rng_ch = '" + rangeUser.substr(0, 2) + "' AND rdir = '" + rangeUser.substr(2) + "'",
+        returnGeometry: true
+      });
+      task.execute(params)
+        .then(function (response) {
+          console.log(response);
+          mapView.goTo(response.features);
+          selectionLayer.graphics.removeAll();
+          //console.log(response.features.length);
+          graphicArray = [];
+          for (i=0; i<response.features.length; i++) {
+            highlightGraphic = new Graphic(response.features[i].geometry, highlightSymbol);
+            graphicArray.push(highlightGraphic);
+            multiPolygonGeometries.push(response.features[i].geometry);
+            //console.log(highlightGraphic);
+          }
+          selectionLayer.graphics.addMany(graphicArray);
+          return response;
+        })
+        //.then(queryFeaturesInBuffer)
+    }
+
     // Input array of features to populate popup
     function showPopup() {
       console.log("into the showPopup");
@@ -783,6 +822,12 @@ require([
       zoomToSectionFeature(townshipRangeSectionURL, type, "sec_ch");
     });
 
+    
+    var queryTownship = dom.byId("selectNGSCityPanel");
+    on(queryTownship, "change", function (e) {
+      var type = e.target.value;
+      zoomToTRFeature(townshipRangeSectionURL, type, "rng_ch");
+    });
     /////////////////////////
     //// Buffer Identify ////
     /////////////////////////
