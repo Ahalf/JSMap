@@ -103,6 +103,15 @@ background-color: #0d3b4b
   background-color: #315866;
 }
 
+
+
+#clearButton {
+  width: 32px;
+  height: 32px;
+}
+
+
+
 /*
 ::-webkit-scrollbar {
   width: 12px;
