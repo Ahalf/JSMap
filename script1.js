@@ -162,7 +162,7 @@ require([
     });
 
 
-    var swfwmdURL = "https://www25.swfwmd.state.fl.us/ArcGIS/rest/services/AGOServices/AGOSurveyBM/MapServer";
+    var swfwmdURL = "https://www25.swfwmd.state.fl.us/ArcGIS/rest/services/AGOServices/AGOSurveyBM/MapServer/0";
     var swfwmdLayer = new FeatureLayer({
       url: swfwmdURL,
       title: "SWFWMD Benchmarks",
@@ -1078,6 +1078,17 @@ function executeIdentifyTask(event) {
         outFields: ["*"],
         name: "Erosion Control Lines",
         placeholder: "Search by County Name or Town Name",
+      }, {
+        featureLayer: {
+          url: swfwmdURL,
+          popupTemplate: swfwmdLayerPopupTemplate
+        },
+        searchFields: ["BENCHMARK_NAME"],
+        suggestionTemplate: "Benchmark Name: {BENCHMARK_NAME}, fileName {FILE_NAME}",
+        exactMatch: false,
+        outFields: ["*"],
+        name: "Survey Benchmarks",
+        placeholder: "Search by Survey Benchmark name",
       }],
     });
 
