@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Bookmarks - 4.5</title>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.5/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.5/"></script>
+
+  <style>
+    html,
+    body,
+    #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    .bookmark-container {
+      position: absolute;
+      top: 100px;
+      left: 15px;
+      padding: 1rem;
+      background: #ffffff;
+      border-radius: 4px;
+      border: 1px solid #eeeeee;
+      box-sizing: border-box;
+    }
+
+    .esriBookmarks {
+      width: 100%;
+      position: relative;
+    }
+
+    .esriBookmarkTable {
+      border-spacing: 0;
+      border-collapse: collapse;
+    }
+
+    .esriBookmarkItem {
+      padding: 5px 10px;
+      width: 100%;
+      border: 1px solid transparent;
+      height: 36px;
+      cursor: pointer;
+    }
+
+    .esriBookmarkItem > *{
+      pointer-events: none;
+    }
+
+    .esriBookmarkLabel {
+      position: relative;
+      float: left;
+      overflow: hidden;
+      line-height: 26px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      text-align: left;
+      vertical-align: middle;
+      margin-left: 0;
+      user-select: none;
+    }
+
+    .esriBookmarkHighlight {
+      background-color: #e2f1fb;
+    }
+
+    *, *:before, *:after {
+      -moz-box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    .esriAddBookmark {
+      color: #6e6e6e;
+    }
+  </style>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "dojo/dom-class",
+      "dojo/query",
+      "dojo/on",
+      "esri/geometry/Extent",
+      "dojo/dom-construct",
+      "dojo/domReady!"
+    ], function(
+      Map, MapView, domClass, dojoQuery, on, Extent, domConstruct
+    ) {
+
+      var map = new Map({
+        basemap: "gray"
+      });
+
+      var view = new MapView({
+        container: "viewDiv",
+        map: map,
+        center: [-119.4179, 36.7783],
+        zoom: 6
+      });
+
+      var bookMarkItems = dojoQuery(".esriBookmarkItem");
+      bookMarkItems.forEach(function(bookMarkItem){
+        on(bookMarkItem, "click", bookmarkEvent);
+        on(bookMarkItem, "mouseover", addMouseOverClass);
+        on(bookMarkItem, "mouseout", removeMouseOverClass);
+      });
+
+      function addMouseOverClass(evt) {
+        domClass.add(evt.target, "esriBookmarkHighlight");
+      }
+
+      function removeMouseOverClass(evt) {
+        domClass.remove(evt.target, "esriBookmarkHighlight");
+      }
+
+      function bookmarkEvent(evt) {
+        if (domClass.contains(evt.target, "esriAddBookmark")){
+          var bmTable = dojoQuery(".esriBookmarkTable")[0];
+          var item = domConstruct.toDom('<div class="esriBookmarkItem" data-extent="' + view.extent.xmin+','+view.extent.ymin+','+view.extent.xmax+','+view.extent.ymax+','+view.extent.spatialReference.wkid + '"><div class="esriBookmarkLabel">New Bookmark</div></div>');
+          domConstruct.place(item, bmTable, "last");
+          on(item, "click", bookmarkEvent);
+          on(item, "mouseover", addMouseOverClass);
+          on(item, "mouseout", removeMouseOverClass);
+          return;
+        }
+
+        var extArr = evt.target.dataset.extent.split(",");
+        view.goTo(new Extent({xmin: extArr[0], ymin: extArr[1], xmax: extArr[2], ymax: extArr[3], spatialReference: {wkid: parseInt(extArr[4])}}),
+          {duration: 2000});
+      }
+
+    });
+  </script>
+</head>
+
+<body class="calcite">
+  <div id="viewDiv">
+    <div class="bookmark-container">
+      <div class="esriBookmarks" id="bookmarks">
+        <div class="esriBookmarkList">
+          <div class="esriBookmarkTable">
+            <div class="esriBookmarkItem" data-extent="-12975151.579395358,3993919.9969406975,-12964144.647322308,4019507.292159126,102100">
+              <div class="esriBookmarkLabel">Palm Springs, CA</div>
+            </div>
+            <div class="esriBookmarkItem" data-extent="-13052123.666878553,4024962.9850527253,-13041116.734805504,4050550.280271154,102100">
+              <div class="esriBookmarkLabel">Redlands, Ca</div>
+            </div>
+            <div class="esriBookmarkItem" data-extent="-13048836.874662295,3844839.127898948,-13037829.942589246,3870426.4231173764,102100">
+              <div class="esriBookmarkLabel">San Diego, CA</div>
+            </div>
+          </div>
+        </div>
+        <div class="esriBookmarkItem esriAddBookmark">
+          <span style="float:left; line-height:26px; padding-right: 4px;" class="esri-icon-plus" aria-label="add icon"></span>
+          <div class="esriBookmarkLabel">Add Bookmark</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
