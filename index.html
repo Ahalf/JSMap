@@ -60,6 +60,7 @@
           <ul class="nav navbar-nav calcite-nav">
 
           </ul></li>
+        <li><a role="button" data-target="#panelInfo" aria-haspopup="true"><span class="glyphicon glyphicon-info-sign"></span> Info</a></li>
         <li><a role="menuitem" tabindex="0" href="#" data-target="#panelBasemaps" aria-haspopup="true"><span class="glyphicon glyphicon-th-large"></span> Basemaps</a></li>
         <li><a role="button" data-target="#panelLayer" aria-haspopup="true"><span class="glyphicon glyphicon-flag"></span> Zoom to Feature</a></li>
         <li><a role="button" data-target="#panelFilterLayer" aria-haspopup="true"><span class="glyphicon glyphicon-flag"></span> Filter Feature</a></li>
@@ -104,6 +105,37 @@
   <!-- Panels -->
 
   <div class="calcite-panels calcite-panels-right calcite-text-light calcite-bg-custom panel-group" style="background-color: #0d3b4b">
+
+
+  <!-- Info Panel -->
+  <div id="panelInfo" class="panel collapse in">
+      <div id="headingInfo" class="panel-heading" role="tab">
+        <div class="panel-title">
+          <a class="panel-toggle collapsed" role="button" data-toggle="collapse" href="#collapseInfo" aria-expanded="true" aria-controls="collapseInfo">
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+            <span class="panel-label">Info</span>
+          </a> 
+          <a class="panel-close" role="button" data-toggle="collapse" data-target="#panelInfo">
+            <span class="esri-icon esri-icon-close" aria-hidden="true"></span>
+          </a>  
+        </div>
+      </div>
+      <div id="collapseInfo" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingInfo">
+        <div id="info" class="panel-body" style="text-align: justify">
+          <p><span style="font-size: medium">This is the updated LABINS Data Explorer created to replace the current LABINS Viewer in Flex which can be found <a id="tablelink" href="http://labins.org/map/index.html" target="_blank">here</a>.</span></p>
+          <p><span style="font-size: medium">1. Percent of population age 5 years and older who speak a language other than English at home</span></p>
+            <p><span style="font-size: small"><a id="tablelink" href="https://factfinder.census.gov/bkmk/table/1.0/en/ACS/14_5YR/DP02/0400000US12" target="_blank">2010-2014 ACS Table DP02 Household Characteristics</a></span></p>
+          <p><span style="font-size: medium">2. Percent of population who are Non-White (including Hispanic)</span></p>
+            <p><span style="font-size: small"><a id="tablelink" href="https://factfinder.census.gov/bkmk/table/1.0/en/ACS/14_5YR/B03002/0400000US12" target="_blank">2010-2014 ACS Table B03002 Race/Ethnicity</a></span></p>
+          <p><span style="font-size: medium">3. Percent of population living below the federal poverty line</span></p>
+            <p><span style="font-size: small"><a id="tablelink" href="https://factfinder.census.gov/bkmk/table/1.0/en/ACS/14_5YR/S2201/0400000US12" target="_blank">2010-2014 ACS Table S2201 Poverty</a></span></p>
+          <p><span style="font-size: medium">4. Percent of population who are women of childbearing age (18-44 years old)</span></p>
+            <p><span style="font-size: small"><a id="tablelink" href="https://factfinder.census.gov/bkmk/table/1.0/en/ACS/14_5YR/B01001/0400000US12" target="_blank">2010-2014 ACS Table B01001 Sex by Age</a></span></p>
+          <p><span style="font-size: medium">5. A sum of the quartiles for each of the above categories, categorized as Low, Medium and High Risk census tracts</span></p>
+          <p><span style="font-size: medium"><i>Please note: the comparison of quartile values between counties is invalid.</i></span></p>
+        </div>
+    </div>
+    </div>
 
     
   <!-- Panel - Basemaps -->
