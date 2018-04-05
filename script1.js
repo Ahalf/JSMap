@@ -425,6 +425,60 @@ require([
         return union;
     }
 
+    function executeSectionIdentify(response) {
+      console.log(response);
+              
+      identifyTask = new IdentifyTask(labinslayerURL);
+
+      // Set the parameters for the Identify
+      params = new IdentifyParameters();
+      params.tolerance = 3;
+      params.layerIds = [2];
+      params.layerOption = "top";
+      params.width = mapView.width;
+      params.height = mapView.height;
+    
+      // Set the geometry to the location of the view click
+      params.geometry = response;
+      params.mapExtent = mapView.extent;
+      dom.byId("mapViewDiv").style.cursor = "wait";
+
+      // This function returns a promise that resolves to an array of features
+      // A custom popupTemplate is set for each feature based on the layer it
+      // originates from
+      identifyTask.execute(params).then(function(response) {
+        var results = response.results;
+
+        return [arrayUtils.map(results, function(result) {
+
+          var feature = result.feature;
+          var layerName = result.layerName;
+
+          feature.attributes.layerName = layerName;
+          if (layerName === 'Certified Corners') {
+            feature.popupTemplate = CCRTemplate;
+          }
+          return feature;
+        }), response];
+      }).then(showPopup); // Send the array of features to showPopup()
+
+      // Shows the results of the Identify in a popup once the promise is resolved
+      function showPopup(data) {
+        console.log(data);
+        response = data[0];
+        geometry = data[1]
+        console.log(geometry);
+
+        if (response.length > 0) {
+          mapView.popup.open({
+            features: response,
+            location: geometry
+          });
+        }
+        dom.byId("mapViewDiv").style.cursor = "auto";
+      }
+    }
+
     var bufferElements = [];
   
 
@@ -456,9 +510,7 @@ require([
           return response;
         })
         .then(createBuffer)
-        //.then(queryFeaturesInBuffer)
-      
-      .then(showPopup);
+        .then(executeSectionIdentify)
     }
 
     function zoomToTRFeature(panelurl, location, attribute) {
@@ -497,28 +549,10 @@ require([
           selectionLayer.graphics.addMany(graphicArray);
           return response;
         })
-        //.then(queryFeaturesInBuffer)
     }
 
-    // Input array of features to populate popup
-    function showPopup() {
-      console.log("into the showPopup");
-      console.log(bufferElements);
-      if (bufferElements.length > 0) {
-        mapView.popup.open({
-          features: bufferElements,
-          location: feature.geometry,
-        });
-      } else {console.log("showPopup didn't work")};
-      dom.byId("mapViewDiv").style.cursor = "auto";
-      //clear array before next call
-      bufferElements.length = 0;
-    }
-        //.then(function (response) {concatIdentify(response)})
-        //.then(showPopup(bufferElements));
-
-        //second bufferIdentify call
-     //bufferIdentify('https://admin205.ispa.fsu.edu/arcgis/rest/services/LABINS/LABINS_2017_Pts_No_SWFMWD/MapServer', [8], ["CCR with Images"], [CCRTemplate], response) 
+    
+    
     var polySym = {
       type: "simple-fill", // autocasts as new SimpleFillSymbol()
       color: [140, 140, 222, 0.5],
@@ -540,6 +574,7 @@ require([
       });
       bufferLayer.graphics.removeAll();
       bufferLayer.add(bufferGraphic);
+      console.log(bufferGeometry);
       return bufferGeometry;
     }
 
