@@ -459,20 +459,21 @@ require([
             feature.popupTemplate = CCRTemplate;
           }
           return feature;
-        }), response];
+        }), params.geometry];
       }).then(showPopup); // Send the array of features to showPopup()
 
       // Shows the results of the Identify in a popup once the promise is resolved
       function showPopup(data) {
         console.log(data);
         response = data[0];
-        geometry = data[1]
+        console.log(response);
+        geometry = data[1];
         console.log(geometry);
 
         if (response.length > 0) {
           mapView.popup.open({
             features: response,
-            location: geometry
+            location: geometry.centroid
           });
         }
         dom.byId("mapViewDiv").style.cursor = "auto";
