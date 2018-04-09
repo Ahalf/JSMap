@@ -391,6 +391,18 @@ require([
     }
 
 
+    function unionGeometries (response) {
+      var multiPolygonGeometries = [];
+      for (i=0; i<response.features.length; i++) {
+        multiPolygonGeometries.push(response.features[i].geometry);
+      }
+      var union = geometryEngine.union(multiPolygonGeometries);
+      console.log(union);
+      return union;
+    }
+
+
+
 // Input location from drop down, zoom to it and highlight
     function zoomToFeature(panelurl, location, attribute) {
       var multiPolygonGeometries = [];
@@ -425,7 +437,7 @@ require([
         return union;
     }
 
-    function executeSectionIdentify(response) {
+    function executeTRSIdentify(response) {
       console.log(response);
               
       identifyTask = new IdentifyTask(labinslayerURL);
@@ -458,6 +470,7 @@ require([
           if (layerName === 'Certified Corners') {
             feature.popupTemplate = CCRTemplate;
           }
+          //console.log(feature);
           return feature;
         }), params.geometry];
       }).then(showPopup); // Send the array of features to showPopup()
@@ -511,7 +524,7 @@ require([
           return response;
         })
         .then(createBuffer)
-        .then(executeSectionIdentify)
+        .then(executeTRSIdentify)
     }
 
     function zoomToTRFeature(panelurl, location, attribute) {
@@ -550,8 +563,10 @@ require([
           selectionLayer.graphics.addMany(graphicArray);
           return response;
         })
+        .then(unionGeometries)
+        //.then(createBuffer)
+        .then(executeTRSIdentify);
     }
-
     
     
     var polySym = {
